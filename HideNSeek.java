@@ -12,16 +12,18 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException {
 
-        createContainers();
+        HideNSeekWorld world = new HideNSeekWorld(args[0]);        
 
-        AgentController H1 = hidersContainer.createNewAgent("Hider1", "HiderAgent", null);
-        H1.start();
-        AgentController H2 = hidersContainer.createNewAgent("Hider2", "HiderAgent", null);
-        H2.start();
-        AgentController S1 = seekersContainer.createNewAgent("Seeker1", "SeekerAgent", null);
-        S1.start();
-        AgentController S2 = seekersContainer.createNewAgent("Seeker2", "SeekerAgent", null);
-        S2.start();
+        // createContainers();
+
+        // AgentController H1 = hidersContainer.createNewAgent("Hider1", "HiderAgent", null);
+        // H1.start();
+        // AgentController H2 = hidersContainer.createNewAgent("Hider2", "HiderAgent", null);
+        // H2.start();
+        // AgentController S1 = seekersContainer.createNewAgent("Seeker1", "SeekerAgent", null);
+        // S1.start();
+        // AgentController S2 = seekersContainer.createNewAgent("Seeker2", "SeekerAgent", null);
+        // S2.start();
     }
 
     public static void createContainers(){
