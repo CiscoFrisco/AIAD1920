@@ -1,20 +1,21 @@
 import jade.core.Agent;
 
+enum Orientation {
+    UP, DOWN, LEFT, RIGHT
+}
+
 public class SeekerAgent extends Agent {
 
     Position pos;
     boolean isGrabbing;
     Orientation currOrientation;
-    ArrayList<Position> cellsSeen;
-
-    enum Orientation {
-        UP, DOWN, LEFT, RIGHT
-    }
+    FieldOfView fov;
 
     public SeekerAgent(int x, int y) {
         pos = new Position(x, y);
         isGrabbing = false;
-        currOrientation = Orientation.UP;
+        currOrientation = Orientation.DOWN;
+        fov = new FieldOfView(currOrientation, pos); 
 
         System.out.println("!!!!Seeker Created!!!!\n");
     }
@@ -23,15 +24,7 @@ public class SeekerAgent extends Agent {
         System.out.println("I am a Seeker!");
     }
 
-    public ArrayList<Position> getCellsSeen() {
-        return cellsSeen;
-    }
-
-    public void setCellsSeen(ArrayList<Position> cellsSeen) {
-        this.cellsSeen = cellsSeen;
-    }
-
-     public void calcCellsSeen(char[][] world){
-        
+    public void calcFieldOfView(char[][] world){
+        fov.calcCellsSeen(world);
     }
 }

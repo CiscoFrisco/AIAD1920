@@ -41,6 +41,10 @@ public class HideNSeekWorld {
         
         printWorld();
         setupWorld();
+        
+        for(SeekerAgent seeker : seekers){
+            seeker.calcFieldOfView(world);
+        }
     }
 
     public char[][] getWorld() {
