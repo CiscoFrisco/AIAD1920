@@ -18,8 +18,8 @@ public class FieldOfView {
         angle = Math.PI/2;
         precision = 5;
         increment = angle/precision;
-        rays = new ArrayList<Ray>(precision);
-        cellsSeen = new ArrayList<Position>();
+        rays = new ArrayList<Ray>(precision + 1);
+        cellsSeen = new ArrayList<Position>(precision + 1);
         setup();
     }
 
@@ -44,18 +44,23 @@ public class FieldOfView {
             break;
         }
 
-        for(int i = 0; i < precision; i++){
+        for(int i = 0; i <= precision; i++){
             if(i > 0)
-                currAngle += ((currAngle + this.increment) < 2*Math.PI) ? this.increment : (currAngle - 2*Math.PI ) + increment;
+                currAngle += ((currAngle + this.increment) <= 2*Math.PI) ? this.increment : this.increment -  (2*Math.PI);
             rays.add(new Ray(seekerPos,currAngle));
         }
     }
 
     public void calcCellsSeen(char[][] world){
         for(Ray ray: rays){
-            System.out.println(ray.getAngle());
-            System.out.println(ray.getSlope());
-            System.out.println(ray.getStep()+"\n");
+            Position cellSeen = ray.getCellSeen(world);
+            cellsSeen.add(cellSeen);
         }
+
+        for(Position cell : cellsSeen){
+            System.out.println(cell.x + "|" + cell.y);
+        }
+
+        System.out.println();
     }
 }

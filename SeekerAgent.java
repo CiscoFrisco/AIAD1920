@@ -14,7 +14,7 @@ public class SeekerAgent extends Agent {
     public SeekerAgent(int x, int y) {
         pos = new Position(x, y);
         isGrabbing = false;
-        currOrientation = Orientation.DOWN;
+        currOrientation = Orientation.RIGHT;
         fov = new FieldOfView(currOrientation, pos); 
 
         System.out.println("!!!!Seeker Created!!!!\n");

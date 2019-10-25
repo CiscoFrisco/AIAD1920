@@ -56,13 +56,13 @@ public class HideNSeekWorld {
             for (int j = 0; j < world[i].length; j++) {
                 switch (world[i][j]) {
                 case 'B':
-                   blocks.add(new Block(i,j));
+                   blocks.add(new Block(j,i));
                     break;
                 case 'H':
-                    hiders.add(new HiderAgent(i,j));
+                    hiders.add(new HiderAgent(j,i));
                     break;
                 case 'S':
-                    seekers.add(new SeekerAgent(i,j));
+                    seekers.add(new SeekerAgent(j,i));
                     break;
                 }
             }

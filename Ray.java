@@ -10,27 +10,62 @@ public class Ray {
         this.angle = angle;
         this.slope = Math.tan(angle);
 
-        if(angle < 3*(Math.PI/2) && angle > (Math.PI/2))
-            step = -0.5;
+        if (angle < 3 * (Math.PI / 2) && angle > (Math.PI / 2))
+            step = -0.25;
         else
-            step = 0.5;
+            step = 0.25;
     }
 
-    // public Position rayIntersectionAt(int x){
-    //     x += originPos.x;
-    //     int y = Math.floor(slope*x) + originPos.y;
-    //     return new Position(x,y);
-    // }
+    public Position getCellSeen(char[][] world) {
 
-    public double getSlope(){
+        double currStep = step;
+        int curr_X_pos, curr_Y_pos;
+
+        if (Math.toDegrees(angle) >= 0 && Math.toDegrees(angle) <=90) {
+            curr_X_pos = (int) Math.ceil(originPos.x + currStep);
+            curr_Y_pos = (int) Math.ceil(originPos.y + slope * currStep);
+        } else {
+            curr_X_pos = (int) Math.floor(originPos.x + currStep);
+            curr_Y_pos = (int) Math.floor(originPos.y + slope * currStep);
+        }
+
+        int old_curr_X_pos = curr_X_pos;
+        int old_curr_Y_pos = curr_Y_pos;
+
+        System.out.println(Math.toDegrees(angle));
+        System.out.println(step);
+
+
+        while ((curr_X_pos >= 0 && curr_X_pos < world.length)
+                && (curr_Y_pos >= 0 && curr_Y_pos < world[curr_X_pos].length) && world[curr_Y_pos][curr_X_pos] == '+') {
+
+            System.out.println(curr_X_pos + "|" + curr_Y_pos + "->" +  world[curr_Y_pos][curr_X_pos]);
+
+            currStep += step;
+            old_curr_X_pos = curr_X_pos;
+            old_curr_Y_pos = curr_Y_pos;
+
+            if (Math.toDegrees(angle) >= 0 && Math.toDegrees(angle) <=90) {
+                curr_X_pos = (int) Math.ceil(originPos.x + currStep);
+                curr_Y_pos = (int) Math.ceil(originPos.y + slope * currStep);
+            } else {
+                curr_X_pos = (int) Math.floor(originPos.x + currStep);
+                curr_Y_pos = (int) Math.floor(originPos.y + slope * currStep);
+            }
+        }
+
+        return new Position(old_curr_X_pos, old_curr_Y_pos);
+    }
+
+    public double getSlope() {
         return slope;
     }
 
-    public double getStep(){
+    public double getStep() {
         return step;
     }
 
-    public double getAngle(){
+    public double getAngle() {
         return angle;
     }
 }
