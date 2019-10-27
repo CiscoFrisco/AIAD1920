@@ -8,8 +8,6 @@ public class HiderAgent extends Agent {
     public HiderAgent(int x, int y){
         pos = new Position(x, y);
         isGrabbing = false;
-
-        System.out.println("!!!!Hider Created!!!!\n");
     }
 
     public void setup() {

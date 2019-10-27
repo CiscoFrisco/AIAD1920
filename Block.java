@@ -16,8 +16,5 @@ public class Block {
         beingGrabed = false;
         this.x = x;
         this.y = y;
-
-        System.out.println("\n!!!!Block Created!!!!\n");
-
     }
 }

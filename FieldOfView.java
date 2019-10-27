@@ -57,6 +57,8 @@ public class FieldOfView {
             cellsSeen.add(cellSeen);
         }
 
+        System.out.print("\n");
+
         for(Position cell : cellsSeen){
             System.out.println(cell.x + "|" + cell.y);
         }
