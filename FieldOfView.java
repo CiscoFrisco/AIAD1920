@@ -1,53 +1,36 @@
 import java.lang.Math; 
 import java.util.ArrayList;
-
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 public class FieldOfView {
 
     private Position seekerPos;
-    private ArrayList<Ray> rays;
-    private ArrayList<Position> cellsSeen;
-    private Orientation currOrientation;
-    private double angle; //line of sight angle
+    private double seekerAngle;
+    private double amplitude; //line of sight angle
     private int precision; //number of rays
-    private double increment;
 
-    public FieldOfView(Orientation currOrientation, Position seekerPos) {
-        this.currOrientation = currOrientation;
+    private ArrayList<Ray> rays;
+    private LinkedHashSet<Position> cellsSeen;
+
+    public FieldOfView(Position seekerPos, double seekerAngle) {
         this.seekerPos = seekerPos;
-        angle = Math.PI/2;
-        precision = 5;
-        increment = angle/precision;
+        this.seekerAngle = seekerAngle;
+        this.amplitude = 7*Math.PI/9;
+        this.precision = 20;
+        
         rays = new ArrayList<Ray>(precision + 1);
-        cellsSeen = new ArrayList<Position>(precision + 1);
+        cellsSeen = new LinkedHashSet<Position>();
         setup();
     }
 
     public void setup() {
 
-        double currAngle = Math.PI/4; 
+        double angle = this.seekerAngle - this.amplitude/2;
+        double increment = amplitude/precision;
 
-        switch(currOrientation){
-
-            case UP: 
-                currAngle = 5*currAngle;
-                break;
-            case DOWN:
-                break;
-            case LEFT:
-                currAngle = 3*currAngle; 
-                break;
-            case RIGHT:
-                currAngle = 7*currAngle; 
-                break;
-            default:
-            break;
-        }
-
-        for(int i = 0; i <= precision; i++){
-            if(i > 0)
-                currAngle += ((currAngle + this.increment) <= 2*Math.PI) ? this.increment : this.increment -  (2*Math.PI);
-            rays.add(new Ray(seekerPos,currAngle));
+        for (int i = 0; i <= this.precision; i++) {
+            rays.add(new Ray(this.seekerPos, angle + i*increment));
         }
     }
 
@@ -65,4 +48,5 @@ public class FieldOfView {
 
         System.out.println();
     }
+
 }

@@ -2,73 +2,47 @@ public class Ray {
 
     private Position originPos;
     private double angle;
-    private double slope;
-    private double step;
+    private char entity;
 
     public Ray(Position originPos, double angle) {
         this.originPos = originPos;
         this.angle = angle;
-        this.slope = Math.tan(angle);
-
-        if (slope > 1.1 || slope < -1.1) {
-            if (angle < 3 * (Math.PI / 2) && angle > (Math.PI / 2))
-                step = -0.35;
-            else
-                step = 0.35;
-
-        } else {
-            if (angle < 3 * (Math.PI / 2) && angle > (Math.PI / 2))
-                step = -0.6;
-            else
-                step = 0.6;
-        }
-
     }
 
     public Position getCellSeen(char[][] world) {
+        double radius = 0.5; 
+        double x = originPos.x + 0.5;
+        double y = originPos.y + 0.5;
+        boolean intersects = false;
 
-        int curr_X_pos, curr_Y_pos, old_curr_X_pos, old_curr_Y_pos;
-        double d_curr_X_pos, d_curr_Y_pos;
-
-        curr_X_pos = originPos.x;
-        curr_Y_pos = originPos.y;
-
-        double currStep = step;
-
-        // System.out.println(slope);
-        // System.out.println(step);
+        int seenX = originPos.x;
+        int seenY = originPos.y;
+        int oldSeenX, oldSeenY;
 
         do {
-            old_curr_X_pos = curr_X_pos;
-            old_curr_Y_pos = curr_Y_pos;
+            oldSeenX = seenX;
+            oldSeenY = seenY;
 
-            d_curr_X_pos = curr_X_pos + 0.5;
-            d_curr_Y_pos = curr_Y_pos + 0.5;
+            x += radius*Math.cos(angle);
+            y -= radius*Math.sin(angle);
+            seenX = (int) x;
+            seenY = (int) y;
 
-            curr_X_pos = (int) Math.floor(originPos.x + currStep + 0.5);
-            curr_Y_pos = (int) Math.floor(originPos.y + slope * currStep + 0.5);
+            if (seenX < 0 || seenX >= world[0].length || seenY < 0 || seenY >= world.length) {
+                seenX = oldSeenX;
+                seenY = oldSeenY;
+                intersects = true;
+            }
+            else if ( world[seenY][seenX] != '+' && ( (seenX != originPos.x) || (seenY != originPos.y)) )
+                intersects = true;
+           
+            radius += 0.1;
+        } while(!intersects);
 
-            // System.out.println(originPos.x + currStep + 0.5);
-            // System.out.println(originPos.y + slope * currStep + 0.5);
-            // System.out.println(curr_X_pos + "|" + curr_Y_pos + " -> " +
-            // world[curr_Y_pos][curr_X_pos]);
-            // System.out.println("HEY: " + d_curr_X_pos + "|" + d_curr_Y_pos);
-
-            currStep += step;
-
-        } while ((curr_X_pos >= 0 && curr_X_pos < world.length)
-                && (curr_Y_pos >= 0 && curr_Y_pos < world[curr_X_pos].length) && world[curr_Y_pos][curr_X_pos] == '+');
-
-        return new Position(old_curr_X_pos, old_curr_Y_pos);
+        Position seenCell = new Position(seenX, seenY);        
+        return seenCell;
     }
 
-    public double getSlope() {
-        return slope;
-    }
-
-    public double getStep() {
-        return step;
-    }
 
     public double getAngle() {
         return angle;

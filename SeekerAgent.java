@@ -8,14 +8,14 @@ public class SeekerAgent extends Agent {
 
     Position pos;
     boolean isGrabbing;
-    Orientation currOrientation;
+    double currOrientation;
     FieldOfView fov;
 
     public SeekerAgent(int x, int y) {
         pos = new Position(x, y);
         isGrabbing = false;
-        currOrientation = Orientation.DOWN;
-        fov = new FieldOfView(currOrientation, pos); 
+        currOrientation = 0;
+        fov = new FieldOfView(pos, currOrientation); 
     }
 
     public void setup() {

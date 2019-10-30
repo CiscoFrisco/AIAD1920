@@ -16,7 +16,15 @@ public class Position{
         return x;
     }
 
-    public int getY(){
+    public int getY() {
         return y;
+    }
+
+    public boolean equals(Object o) {
+        return this.x == ((Position)o).x && this.y == ((Position)o).y;
+    }
+
+    public int hashCode() {
+        return (Integer.toString(x) + "," + Integer.toString(y)).hashCode();
     }
 }
