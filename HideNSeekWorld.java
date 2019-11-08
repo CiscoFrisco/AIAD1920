@@ -10,14 +10,14 @@ import java.io.IOException;
 public class HideNSeekWorld {
 
     char[][] world;
-    ArrayList<HiderAgent> hiders;
-    ArrayList<SeekerAgent> seekers;
+    ArrayList<Hider> hiders;
+    ArrayList<Seeker> seekers;
     ArrayList<Block> blocks;
 
     public HideNSeekWorld(String world_name) {
 
-        hiders = new ArrayList<HiderAgent>();
-        seekers = new ArrayList<SeekerAgent>();
+        hiders = new ArrayList<Hider>();
+        seekers = new ArrayList<Seeker>();
         blocks = new ArrayList<Block>();
 
         try{
@@ -41,10 +41,6 @@ public class HideNSeekWorld {
         
         printWorld();
         setupWorld();
-        
-        for(SeekerAgent seeker : seekers){
-            seeker.calcFieldOfView(world);
-        }
     }
 
     public char[][] getWorld() {
@@ -59,10 +55,10 @@ public class HideNSeekWorld {
                    blocks.add(new Block(j,i));
                     break;
                 case 'H':
-                    hiders.add(new HiderAgent(j,i));
+                    hiders.add(new Hider(j,i));
                     break;
                 case 'S':
-                    seekers.add(new SeekerAgent(j,i));
+                    seekers.add(new Seeker(j,i));
                     break;
                 }
             }
@@ -76,5 +72,13 @@ public class HideNSeekWorld {
             }
             System.out.print(" |\n");
         }
+    }
+
+    public ArrayList<Hider> getHiders(){
+        return hiders;
+    }
+
+    public ArrayList<Seeker> getSeekers(){
+        return seekers;
     }
 }

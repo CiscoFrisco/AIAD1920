@@ -10,20 +10,41 @@ public class HideNSeek {
     private static ContainerController hidersContainer;
     private static ContainerController seekersContainer;
 
-    public static void main(String[] args) throws StaleProxyException {
+    public static void main(String[] args) throws StaleProxyException, InterruptedException {
 
-        HideNSeekWorld world = new HideNSeekWorld(args[0]);        
+        HideNSeekWorld world = new HideNSeekWorld(args[0]); 
 
-        // createContainers();
+        createContainers();
+        mainContainer.createNewAgent("Master", "GameMasterAgent", null).start();
+        // Thread.sleep(1000);
+        createHiderAgents(world.getHiders().size());
+        createSeekerAgents(world.getSeekers().size());
+    }
 
-        // AgentController H1 = hidersContainer.createNewAgent("Hider1", "HiderAgent", null);
-        // H1.start();
-        // AgentController H2 = hidersContainer.createNewAgent("Hider2", "HiderAgent", null);
-        // H2.start();
-        // AgentController S1 = seekersContainer.createNewAgent("Seeker1", "SeekerAgent", null);
-        // S1.start();
-        // AgentController S2 = seekersContainer.createNewAgent("Seeker2", "SeekerAgent", null);
-        // S2.start();
+    public static void createHiderAgents(int numHiders){
+
+        try{
+            for(int i = 0; i < numHiders; i++){
+                hidersContainer.createNewAgent("Hider" + i, "HiderAgent", null).start();
+            }  
+        }
+        catch(StaleProxyException e){
+            e.printStackTrace();
+        }
+       
+    }
+
+    public static void createSeekerAgents(int numSeekers){
+        
+        try{
+            for(int i = 0; i < numSeekers; i++){
+                seekersContainer.createNewAgent("Seeker" + i, "SeekerAgent", null).start();
+            }  
+        }
+        catch(StaleProxyException e){
+            e.printStackTrace();
+        }
+
     }
 
     public static void createContainers(){

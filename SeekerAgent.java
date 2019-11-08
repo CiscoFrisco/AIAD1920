@@ -1,28 +1,37 @@
 import jade.core.Agent;
-
-enum Orientation {
-    UP, DOWN, LEFT, RIGHT
-}
+import jade.core.AID;
+import jade.core.behaviours.*;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 public class SeekerAgent extends Agent {
 
-    Position pos;
-    boolean isGrabbing;
-    double currOrientation;
-    FieldOfView fov;
-
-    public SeekerAgent(int x, int y) {
-        pos = new Position(x, y);
-        isGrabbing = false;
-        currOrientation = 0;
-        fov = new FieldOfView(pos, currOrientation); 
-    }
+    private AID masterAID;
 
     public void setup() {
-        System.out.println("I am a Seeker!");
+        System.out.println("Hello I am a Seeker Agent "  + getAID().getName() + "!");
+        getMasterAID();
     }
 
-    public void calcFieldOfView(char[][] world){
-        fov.calcCellsSeen(world);
+    public void getMasterAID() {
+
+        addBehaviour(new OneShotBehaviour() {
+            protected void action() {
+                // Update the list of seller agents
+                DFAgentDescription template = new DFAgentDescription();
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("master");
+                template.addServices(sd);
+                try {
+                    DFAgentDescription[] result = DFService.search(myAgent, template);
+                    masterAID = result[0].getName();
+                    System.out.println(masterAID.getName());
+                } catch (FIPAException fe) {
+                    fe.printStackTrace();
+                }
+            }
+        });
     }
 }

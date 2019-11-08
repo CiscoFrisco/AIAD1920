@@ -2,7 +2,6 @@ public class Ray {
 
     private Position originPos;
     private double angle;
-    private char entity;
 
     public Ray(Position originPos, double angle) {
         this.originPos = originPos;

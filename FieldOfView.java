@@ -1,6 +1,5 @@
 import java.lang.Math; 
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.LinkedHashSet;
 
 public class FieldOfView {
@@ -48,5 +47,4 @@ public class FieldOfView {
 
         System.out.println();
     }
-
 }
