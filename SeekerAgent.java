@@ -12,13 +12,29 @@ public class SeekerAgent extends Agent {
 
     public void setup() {
         System.out.println("Hello I am a Seeker Agent "  + getAID().getName() + "!");
+        
+        registerSeeker();
         getMasterAID();
+    }
+
+    public void registerSeeker() {
+        DFAgentDescription dfd = new DFAgentDescription();
+        dfd.setName(getAID());
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("seeker");
+        sd.setName("JADE-hide-n-seek");
+        dfd.addServices(sd);
+        try {
+            DFService.register(this, dfd);
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
     }
 
     public void getMasterAID() {
 
         addBehaviour(new OneShotBehaviour() {
-            protected void action() {
+            public void action() {
                 // Update the list of seller agents
                 DFAgentDescription template = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();

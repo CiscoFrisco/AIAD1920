@@ -12,13 +12,28 @@ public class HiderAgent extends Agent {
 
     public void setup() {
         System.out.println("Hello I am a Hider Agent " + getAID().getName() + "!");
+        registerHider();
         getMasterAID();
+    }
+
+    public void registerHider() {
+        DFAgentDescription dfd = new DFAgentDescription();
+        dfd.setName(getAID());
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("hider");
+        sd.setName("JADE-hide-n-seek");
+        dfd.addServices(sd);
+        try {
+            DFService.register(this, dfd);
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
     }
 
     public void getMasterAID() {
 
         addBehaviour(new OneShotBehaviour() {
-            protected void action() {
+            public void action() {
                 // Update the list of seller agents
                 DFAgentDescription template = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();

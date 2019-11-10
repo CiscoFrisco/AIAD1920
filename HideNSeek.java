@@ -15,8 +15,8 @@ public class HideNSeek {
         HideNSeekWorld world = new HideNSeekWorld(args[0]); 
 
         createContainers();
+
         mainContainer.createNewAgent("Master", "GameMasterAgent", null).start();
-        // Thread.sleep(1000);
         createHiderAgents(world.getHiders().size());
         createSeekerAgents(world.getSeekers().size());
     }
