@@ -1,6 +1,8 @@
 import jade.core.Agent;
 import jade.core.AID;
 import jade.core.behaviours.*;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -12,14 +14,22 @@ public class GameMasterAgent extends Agent {
 
     private ArrayList<AID> hiders;
     private ArrayList<AID> seekers;
+    char[][] world;
+    private int total_rounds;
+    private int warmup;
+    private int counter;
 
     public void setup() {
-        System.out.println("Hello I am the Game Master " + getAID().getName() + "!");
+
+        Object[] args = getArguments();
+        world = (char[][]) args[0];
+        total_rounds = 5;
+        warmup = (int) Math.floor(0.4 * total_rounds);
+        counter = 0;
 
         registerMaster();
 
-        getAgentsAID(false);
-        getAgentsAID(true);
+        getAgentsAID();
     }
 
     public void registerMaster() {
@@ -36,39 +46,206 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public void getAgentsAID(boolean isSeeker) {
+    public void getAgentsAID() {
 
         addBehaviour(new WakerBehaviour(this, 5000) {
             protected void onWake() {
-                // Update the list of seller agents
-                DFAgentDescription template = new DFAgentDescription();
-                ServiceDescription sd = new ServiceDescription();
 
-                if (isSeeker)
-                    sd.setType("seeker");
-                else
-                    sd.setType("hider");
+                // Make template for hiders
+                DFAgentDescription template_hiders = new DFAgentDescription();
+                ServiceDescription sd_hiders = new ServiceDescription();
+                sd_hiders.setType("hider");
+                template_hiders.addServices(sd_hiders);
 
-                template.addServices(sd);
+                // Make template for seekers
+                DFAgentDescription template_seekers = new DFAgentDescription();
+                ServiceDescription sd_seekers = new ServiceDescription();
+                sd_seekers.setType("seeker");
+                template_seekers.addServices(sd_seekers);
 
                 try {
-                    DFAgentDescription[] result = DFService.search(myAgent, template);
+                    DFAgentDescription[] result_hiders = DFService.search(myAgent, template_hiders);
+                    DFAgentDescription[] result_seekers = DFService.search(myAgent, template_seekers);
 
-                    AID[] temp = new AID[result.length];
+                    AID[] temp_hiders = new AID[result_hiders.length];
+                    AID[] temp_seekers = new AID[result_seekers.length];
 
-                    for (int i = 0; i < result.length; ++i) {
-                        temp[i] = result[i].getName();
+                    for (int i = 0; i < result_hiders.length; ++i) {
+                        temp_hiders[i] = result_hiders[i].getName();
                     }
 
-                    if (isSeeker)
-                        seekers = new ArrayList<AID>(Arrays.asList(temp));
-                    else
-                        hiders = new ArrayList<AID>(Arrays.asList(temp));
+                    for (int i = 0; i < result_seekers.length; ++i) {
+                        temp_seekers[i] = result_seekers[i].getName();
+                    }
+
+                    seekers = new ArrayList<AID>(Arrays.asList(temp_seekers));
+                    hiders = new ArrayList<AID>(Arrays.asList(temp_hiders));
+
+                    addBehaviour(new PlayBehaviour());
+                    addBehaviour(new FOVRequestsBehaviour());
 
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
                 }
             }
         });
+
+    }
+
+    public class PlayBehaviour extends TickerBehaviour {
+
+        public PlayBehaviour() {
+            super(null, 1000);
+        }
+
+        public void onTick() {
+            ((GameMasterAgent) myAgent).counter++;
+
+            System.out.println(((GameMasterAgent) myAgent).counter);
+
+            if (((GameMasterAgent) myAgent).counter == ((GameMasterAgent) myAgent).warmup) {
+                addBehaviour(new SignalWarmupEndBehaviour());
+            }
+
+            if (((GameMasterAgent) myAgent).counter > ((GameMasterAgent) myAgent).total_rounds) {
+                stop();
+            }
+
+            addBehaviour(new SignalTurnBehaviour());
+        }
+    }
+
+    public class SignalTurnBehaviour extends OneShotBehaviour {
+
+        public void action() {
+
+            ACLMessage inf = new ACLMessage(ACLMessage.INFORM);
+
+            ArrayList<AID> seekers = ((GameMasterAgent) myAgent).seekers;
+            ArrayList<AID> hiders = ((GameMasterAgent) myAgent).hiders;
+
+            if (((GameMasterAgent) myAgent).counter > ((GameMasterAgent) myAgent).warmup) {
+                for (int i = 0; i < seekers.size(); ++i) {
+                    inf.addReceiver(seekers.get(i));
+                }
+            }
+
+            for (int i = 0; i < hiders.size(); ++i) {
+                inf.addReceiver(hiders.get(i));
+            }
+
+            inf.setContent("Your Turn");
+                inf.setConversationId("signal-turn");
+                inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
+                myAgent.send(inf);
+                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+        }
+    }
+
+    public class SignalWarmupEndBehaviour extends SimpleBehaviour {
+
+        private int step = 0;
+        private MessageTemplate mt; // The template to receive replies
+        private int num_replies;
+        private int num_seekers;
+
+        public void action() {
+            switch (step) {
+            case 0:
+                num_seekers = seekers.size();
+                // Send the cfp to all sellers
+                ACLMessage inf = new ACLMessage(ACLMessage.INFORM);
+                for (int i = 0; i < seekers.size(); ++i) {
+                    inf.addReceiver(seekers.get(i));
+                }
+                inf.setContent("Warmup Ended");
+                inf.setConversationId("signal-warmup");
+                inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
+                myAgent.send(inf);
+                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+                // Prepare the template to get acknowledgements
+                mt = MessageTemplate.and(MessageTemplate.MatchConversationId("signal-warmup"),
+                        MessageTemplate.MatchInReplyTo(inf.getReplyWith()));
+                step = 1;
+                break;
+            case 1:
+                // Receive all acknowledgements from seeker agents
+                ACLMessage reply = myAgent.receive(mt);
+                if (reply != null) {
+
+                    // Reply received
+                    if (reply.getPerformative() == ACLMessage.INFORM) {
+                        num_replies++;
+                        String content = reply.getContent();
+                        String[] splited = content.split("\\s+");
+                        System.out.println("GameMaster " + getAID().getName() + " received:" + reply.getContent()
+                                + " from " + splited[1]);
+                    }
+                } else {
+                    block();
+                }
+                break;
+            }
+        }
+
+        public boolean done() {
+            return (step == 1 && num_seekers == num_replies);
+        }
+    }
+
+    public class FOVRequestsBehaviour extends CyclicBehaviour {
+
+        private int step = 0;
+        private MessageTemplate mt; // The template to receive replies
+        private ACLMessage request;
+        private FieldOfView fov;
+        private String[] splited = new String[100];
+
+        public void action() {
+
+            switch (step) {
+            case 0: // listen for request
+                MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+                request = myAgent.receive(mt);
+
+                if (request != null) {
+                    // Request received
+                    String content = request.getContent();
+                    splited = content.split("\\s+");
+                    step = 1;
+                }
+                break;
+            case 1:// calc FOV
+                fov = new FieldOfView(new Position(Integer.parseInt(splited[0]), Integer.parseInt(splited[1])),
+                        Double.parseDouble(splited[2]));
+                fov.calcCellsSeen(((GameMasterAgent) myAgent).getWorld());
+                step = 2;
+                break;
+            case 2:// send FOV
+                // construct message
+                ACLMessage reply = request.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                
+                String content = "";
+                for (Position cell : fov.getCellsSeen()) {
+                    content += cell.x + "," + cell.y + ";";
+                }
+
+                reply.setContent(content);
+                ((GameMasterAgent)myAgent).send(reply);
+                System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
+                step = 0;
+
+                break;
+            }
+        }
+    }
+
+    public char[][] getWorld() {
+        return world;
+    }
+
+    public void setWorld(char[][] world) {
+        this.world = world;
     }
 }

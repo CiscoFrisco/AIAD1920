@@ -38,13 +38,13 @@ public class FieldOfView {
             Position cellSeen = ray.getCellSeen(world);
             cellsSeen.add(cellSeen);
         }
+    }
 
-        System.out.print("\n");
+    public LinkedHashSet<Position> getCellsSeen() {
+        return cellsSeen;
+    }
 
-        for(Position cell : cellsSeen){
-            System.out.println(cell.x + "|" + cell.y);
-        }
-
-        System.out.println();
+    public void setCellsSeen(LinkedHashSet<Position> cellsSeen) {
+        this.cellsSeen = cellsSeen;
     }
 }

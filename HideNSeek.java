@@ -1,5 +1,6 @@
 import jade.core.*;
 import jade.wrapper.*;
+import java.util.ArrayList;
 
 public class HideNSeek {
     private static jade.core.Runtime rt;
@@ -12,45 +13,59 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException, InterruptedException {
 
-        HideNSeekWorld world = new HideNSeekWorld(args[0]); 
+        HideNSeekWorld world = new HideNSeekWorld(args[0]);
 
         createContainers();
 
-        mainContainer.createNewAgent("Master", "GameMasterAgent", null).start();
-        createHiderAgents(world.getHiders().size());
-        createSeekerAgents(world.getSeekers().size());
+        createGameMaster(world.getWorld());
+
+        createHiderAgents(world.getHiders());
+        createSeekerAgents(world.getSeekers());
     }
 
-    public static void createHiderAgents(int numHiders){
+    public static void createGameMaster(char[][] world) {
 
-        try{
-            for(int i = 0; i < numHiders; i++){
-                hidersContainer.createNewAgent("Hider" + i, "HiderAgent", null).start();
-            }  
-        }
-        catch(StaleProxyException e){
-            e.printStackTrace();
-        }
-       
-    }
-
-    public static void createSeekerAgents(int numSeekers){
-        
-        try{
-            for(int i = 0; i < numSeekers; i++){
-                seekersContainer.createNewAgent("Seeker" + i, "SeekerAgent", null).start();
-            }  
-        }
-        catch(StaleProxyException e){
+        try {
+            Object[] args = new Object[1];
+            args[0] = world;
+            mainContainer.createNewAgent("Master", "GameMasterAgent", args).start();
+        } catch (StaleProxyException e) {
             e.printStackTrace();
         }
 
     }
 
-    public static void createContainers(){
+    public static void createHiderAgents(ArrayList<Position> hiders) {
+
+        try {
+            for (int i = 0; i < hiders.size(); i++) {
+                Object[] args = new Object[1];
+                args[0] = hiders.get(i);
+                hidersContainer.createNewAgent("Hider" + i, "HiderAgent", args).start();
+            }
+        } catch (StaleProxyException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void createSeekerAgents(ArrayList<Position> seekers) {
+
+        try {
+            for (int i = 0; i < seekers.size(); i++) {
+                Object[] args = new Object[1];
+                args[0] = seekers.get(i);
+                seekersContainer.createNewAgent("Seeker" + i, "SeekerAgent", args).start();
+            }
+        } catch (StaleProxyException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void createContainers() {
         rt = jade.core.Runtime.instance();
         profile = new ProfileImpl();
-        profile.setParameter(Profile.GUI, "true");
         mainContainer = rt.createMainContainer(profile);
 
         p1 = new ProfileImpl();

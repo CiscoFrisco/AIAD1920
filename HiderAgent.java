@@ -5,15 +5,15 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import java.util.LinkedHashSet;
 
-public class HiderAgent extends Agent {
-
-    private AID masterAID;
+public class HiderAgent extends GameAgent {
 
     public void setup() {
-        System.out.println("Hello I am a Hider Agent " + getAID().getName() + "!");
+        super.setup();
         registerHider();
-        getMasterAID();
+
+        addBehaviour(new WaitForTurnBehaviour(this.getMasterAID(), this));
     }
 
     public void registerHider() {
@@ -28,25 +28,5 @@ public class HiderAgent extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-    }
-
-    public void getMasterAID() {
-
-        addBehaviour(new OneShotBehaviour() {
-            public void action() {
-                // Update the list of seller agents
-                DFAgentDescription template = new DFAgentDescription();
-                ServiceDescription sd = new ServiceDescription();
-                sd.setType("master");
-                template.addServices(sd);
-                try {
-                    DFAgentDescription[] result = DFService.search(myAgent, template);
-                    masterAID = result[0].getName();
-                    System.out.println(masterAID.getName());
-                } catch (FIPAException fe) {
-                    fe.printStackTrace();
-                }
-            }
-        });
     }
 }

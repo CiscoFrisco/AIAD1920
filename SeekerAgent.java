@@ -1,20 +1,20 @@
 import jade.core.Agent;
 import jade.core.AID;
 import jade.core.behaviours.*;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
+import java.util.LinkedHashSet;
 
-public class SeekerAgent extends Agent {
-
-    private AID masterAID;
+public class SeekerAgent extends GameAgent {
 
     public void setup() {
-        System.out.println("Hello I am a Seeker Agent "  + getAID().getName() + "!");
-        
+        super.setup();
         registerSeeker();
-        getMasterAID();
+        addBehaviour(new WarmupEndBehaviour());
     }
 
     public void registerSeeker() {
@@ -31,23 +31,30 @@ public class SeekerAgent extends Agent {
         }
     }
 
-    public void getMasterAID() {
+    public class WarmupEndBehaviour extends SimpleBehaviour {
 
-        addBehaviour(new OneShotBehaviour() {
-            public void action() {
-                // Update the list of seller agents
-                DFAgentDescription template = new DFAgentDescription();
-                ServiceDescription sd = new ServiceDescription();
-                sd.setType("master");
-                template.addServices(sd);
-                try {
-                    DFAgentDescription[] result = DFService.search(myAgent, template);
-                    masterAID = result[0].getName();
-                    System.out.println(masterAID.getName());
-                } catch (FIPAException fe) {
-                    fe.printStackTrace();
-                }
+        private ACLMessage signal;
+
+        public void action() {
+            // Receive signal from master
+            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+            signal = myAgent.receive(mt);
+
+            if (signal != null) {
+                // Signal received
+                System.out.println("Seeker " + getAID().getName() + " received: " + signal.getContent());
+                ACLMessage reply = signal.createReply();
+                reply.setPerformative(ACLMessage.INFORM);
+                reply.setContent("Goucha! " + getAID().getName());
+                myAgent.send(reply);
+                System.out.println("Seeker " + getAID().getName() + " sended: " + reply.getContent());
+
+                addBehaviour(new WaitForTurnBehaviour(((SeekerAgent)myAgent).getMasterAID(), (SeekerAgent)myAgent));
             }
-        });
+        }
+
+        public boolean done() {
+            return signal != null;
+        }
     }
 }

@@ -6,18 +6,17 @@ import java.io.FileReader;
 import java.lang.NumberFormatException;
 import java.io.IOException;
 
-
 public class HideNSeekWorld {
 
     char[][] world;
-    ArrayList<Hider> hiders;
-    ArrayList<Seeker> seekers;
+    ArrayList<Position> hiders;
+    ArrayList<Position> seekers;
     ArrayList<Block> blocks;
 
     public HideNSeekWorld(String world_name) {
 
-        hiders = new ArrayList<Hider>();
-        seekers = new ArrayList<Seeker>();
+        hiders = new ArrayList<Position>();
+        seekers = new ArrayList<Position>();
         blocks = new ArrayList<Block>();
 
         try{
@@ -55,10 +54,10 @@ public class HideNSeekWorld {
                    blocks.add(new Block(j,i));
                     break;
                 case 'H':
-                    hiders.add(new Hider(j,i));
+                    hiders.add(new Position(j,i));
                     break;
                 case 'S':
-                    seekers.add(new Seeker(j,i));
+                    seekers.add(new Position(j,i));
                     break;
                 }
             }
@@ -74,11 +73,11 @@ public class HideNSeekWorld {
         }
     }
 
-    public ArrayList<Hider> getHiders(){
+    public ArrayList<Position> getHiders(){
         return hiders;
     }
 
-    public ArrayList<Seeker> getSeekers(){
+    public ArrayList<Position> getSeekers(){
         return seekers;
     }
 }
