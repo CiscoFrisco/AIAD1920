@@ -13,7 +13,7 @@ public class HiderAgent extends GameAgent {
         super.setup();
         registerHider();
 
-        addBehaviour(new WaitForTurnBehaviour(this.getMasterAID(), this));
+        addBehaviour(new WaitForTurnBehaviour(this));
     }
 
     public void registerHider() {

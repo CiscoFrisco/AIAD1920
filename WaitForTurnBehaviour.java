@@ -12,14 +12,11 @@ import java.util.LinkedHashSet;
 public class WaitForTurnBehaviour extends SimpleBehaviour {
 
     private ACLMessage signal;
-    private AID masterAID;
-    private Agent agent;
+    private GameAgent agent;
 
-    public WaitForTurnBehaviour(AID masterAID, Agent agent){
+    public WaitForTurnBehaviour(GameAgent agent){
         super();
-        this.masterAID = masterAID;
         this.agent = agent;
-
     }
 
     public void action() {
@@ -30,7 +27,7 @@ public class WaitForTurnBehaviour extends SimpleBehaviour {
         if (signal != null) {
             // Signal received
             if(signal.getContent().equals("Your Turn")){
-                agent.addBehaviour(new PlayTurnBehaviour(masterAID, agent));
+                agent.addBehaviour(new PlayTurnBehaviour(agent));
             }
         }
     }

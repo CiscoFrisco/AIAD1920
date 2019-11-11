@@ -49,7 +49,7 @@ public class SeekerAgent extends GameAgent {
                 myAgent.send(reply);
                 System.out.println("Seeker " + getAID().getName() + " sended: " + reply.getContent());
 
-                addBehaviour(new WaitForTurnBehaviour(((SeekerAgent)myAgent).getMasterAID(), (SeekerAgent)myAgent));
+                addBehaviour(new WaitForTurnBehaviour((GameAgent)myAgent));
             }
         }
 

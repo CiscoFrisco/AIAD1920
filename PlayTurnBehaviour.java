@@ -15,12 +15,10 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
     private int step = 0;
     private MessageTemplate mt;
     private ACLMessage reply;
-    private AID masterAID;
-    private Agent agent;
+    private GameAgent agent;
 
-    public PlayTurnBehaviour(AID masterAID, Agent agent){
+    public PlayTurnBehaviour(GameAgent agent){
         super();
-        this.masterAID = masterAID;
         this.agent = agent;
     }
 
@@ -29,7 +27,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
             case 0:
                 //send Position and Orientation to Master
                 ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-                request.addReceiver(masterAID);
+                request.addReceiver(agent.getMasterAID());
 
                 GameAgent gameAgent = (GameAgent)myAgent;
 
@@ -65,7 +63,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
 
                         ((GameAgent)myAgent).setCellsSeen(cells);
                         
-                        agent.addBehaviour(new WaitForTurnBehaviour(masterAID, agent));
+                        agent.addBehaviour(new WaitForTurnBehaviour(agent));
                     }
                 } else {
                     block();

@@ -48,7 +48,7 @@ public class GameMasterAgent extends Agent {
 
     public void getAgentsAID() {
 
-        addBehaviour(new WakerBehaviour(this, 5000) {
+        addBehaviour(new WakerBehaviour(this, 1000) {
             protected void onWake() {
 
                 // Make template for hiders
@@ -205,10 +205,10 @@ public class GameMasterAgent extends Agent {
 
             switch (step) {
             case 0: // listen for request
-                MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
+                mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                 request = myAgent.receive(mt);
-
                 if (request != null) {
+                    
                     // Request received
                     String content = request.getContent();
                     splited = content.split("\\s+");
@@ -235,7 +235,6 @@ public class GameMasterAgent extends Agent {
                 ((GameMasterAgent)myAgent).send(reply);
                 System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
                 step = 0;
-
                 break;
             }
         }
