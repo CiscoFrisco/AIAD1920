@@ -135,10 +135,10 @@ public class GameMasterAgent extends Agent {
             }
 
             inf.setContent("Your Turn");
-                inf.setConversationId("signal-turn");
-                inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
-                myAgent.send(inf);
-                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+            inf.setConversationId("signal-turn");
+            inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
+            myAgent.send(inf);
+            Logger.writeLog("GameMaster" + getAID().getName() + " sended: " + inf.getContent(), "master");
         }
     }
 
@@ -162,7 +162,7 @@ public class GameMasterAgent extends Agent {
                 inf.setConversationId("signal-warmup");
                 inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
                 myAgent.send(inf);
-                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+                Logger.writeLog("GameMaster" + getAID().getName() + " sended: " + inf.getContent(), "master");
                 // Prepare the template to get acknowledgements
                 mt = MessageTemplate.and(MessageTemplate.MatchConversationId("signal-warmup"),
                         MessageTemplate.MatchInReplyTo(inf.getReplyWith()));
@@ -178,8 +178,8 @@ public class GameMasterAgent extends Agent {
                         num_replies++;
                         String content = reply.getContent();
                         String[] splited = content.split("\\s+");
-                        System.out.println("GameMaster " + getAID().getName() + " received:" + reply.getContent()
-                                + " from " + splited[1]);
+                        Logger.writeLog("GameMaster " + getAID().getName() + " received:" + reply.getContent()
+                                + " from " + splited[1], "master");
                     }
                 } else {
                     block();
@@ -208,7 +208,7 @@ public class GameMasterAgent extends Agent {
                 mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
                 request = myAgent.receive(mt);
                 if (request != null) {
-                    
+
                     // Request received
                     String content = request.getContent();
                     splited = content.split("\\s+");
@@ -222,18 +222,18 @@ public class GameMasterAgent extends Agent {
                 step = 2;
                 break;
             case 2:// send FOV
-                // construct message
+                   // construct message
                 ACLMessage reply = request.createReply();
                 reply.setPerformative(ACLMessage.INFORM);
-                
+
                 String content = "";
                 for (Position cell : fov.getCellsSeen()) {
                     content += cell.x + "," + cell.y + ";";
                 }
 
                 reply.setContent(content);
-                ((GameMasterAgent)myAgent).send(reply);
-                System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
+                ((GameMasterAgent) myAgent).send(reply);
+                Logger.writeLog("GameMaster " + getAID().getName() + " sended:" + reply.getContent(), "master");
                 step = 0;
                 break;
             }

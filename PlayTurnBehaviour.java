@@ -36,7 +36,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
                 request.setConversationId("req" + agent.getAID().getName());
                 request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
                 myAgent.send(request);
-                System.out.println("Agent" + agent.getAID().getName() + " sended: " + request.getContent());
+                Logger.writeLog("Agent" + agent.getAID().getName() + " sended: " + request.getContent(), "master");
                 // Prepare the template to get FOV
                 mt = MessageTemplate.and(MessageTemplate.MatchConversationId("req" + agent.getAID().getName()),
                         MessageTemplate.MatchInReplyTo(request.getReplyWith()));
@@ -51,7 +51,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
                     if (reply.getPerformative() == ACLMessage.INFORM) {
 
                         String content = reply.getContent();
-                        System.out.println("Agent " + agent.getAID().getName() + " received:" + content);
+                        Logger.writeLog("Agent " + agent.getAID().getName() + " received:" + content, "master");
                         String[] splited = content.split(";");
 
                         LinkedHashSet<Position> cells = new LinkedHashSet<Position>();

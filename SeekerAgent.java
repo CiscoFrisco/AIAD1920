@@ -42,14 +42,14 @@ public class SeekerAgent extends GameAgent {
 
             if (signal != null) {
                 // Signal received
-                System.out.println("Seeker " + getAID().getName() + " received: " + signal.getContent());
+                Logger.writeLog("Seeker " + getAID().getName() + " received: " + signal.getContent(), "master");
                 ACLMessage reply = signal.createReply();
                 reply.setPerformative(ACLMessage.INFORM);
                 reply.setContent("Goucha! " + getAID().getName());
                 myAgent.send(reply);
-                System.out.println("Seeker " + getAID().getName() + " sended: " + reply.getContent());
+                Logger.writeLog("Seeker " + getAID().getName() + " sended: " + reply.getContent(), "master");
 
-                addBehaviour(new WaitForTurnBehaviour((GameAgent)myAgent));
+                addBehaviour(new WaitForTurnBehaviour((GameAgent) myAgent));
             }
         }
 
