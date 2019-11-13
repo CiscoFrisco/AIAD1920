@@ -27,7 +27,7 @@ public class WaitForTurnBehaviour extends SimpleBehaviour {
         if (signal != null) {
             // Signal received
             if(signal.getContent().equals("Your Turn")){
-                agent.addBehaviour(new PlayTurnBehaviour(agent));
+                agent.addBehaviour(new PlayTurnBehaviour());
             }
         }
     }

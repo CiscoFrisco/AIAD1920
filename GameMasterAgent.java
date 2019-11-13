@@ -11,24 +11,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameMasterAgent extends Agent {
+    private enum state {WARMUP, PLAY, HIDERS_WIN, SEEKERS_WIN, END_GAME}
 
     private ArrayList<AID> hiders;
     private ArrayList<AID> seekers;
     char[][] world;
-    private int total_rounds;
+
+    private state gameState;
+    private int rounds;
     private int warmup;
-    private int counter;
+
 
     public void setup() {
 
         Object[] args = getArguments();
         world = (char[][]) args[0];
-        total_rounds = 5;
-        warmup = (int) Math.floor(0.4 * total_rounds);
-        counter = 0;
+
+        gameState = state.WARMUP;
+        rounds = 5;
+        warmup = (int) Math.floor(0.4 * rounds);
+
 
         registerMaster();
-
         getAgentsAID();
     }
 
@@ -93,25 +97,52 @@ public class GameMasterAgent extends Agent {
     }
 
     public class PlayBehaviour extends TickerBehaviour {
+        int counter = 0;
 
         public PlayBehaviour() {
             super(null, 1000);
         }
 
         public void onTick() {
-            ((GameMasterAgent) myAgent).counter++;
+            GameMasterAgent master = (GameMasterAgent) myAgent;
 
-            System.out.println(((GameMasterAgent) myAgent).counter);
+            counter++;
 
-            if (((GameMasterAgent) myAgent).counter == ((GameMasterAgent) myAgent).warmup) {
-                addBehaviour(new SignalWarmupEndBehaviour());
+            System.out.println(counter + ": " + master.gameState);
+
+            switch (master.gameState) {
+                case WARMUP:
+                    if (counter == master.warmup) {
+                        addBehaviour(new SignalWarmupEndBehaviour());
+                        master.gameState = state.PLAY;
+                    }
+                break;
+
+                case PLAY:
+                    if (counter > master.rounds) {
+                        master.gameState = state.HIDERS_WIN;
+                    }
+                    else {
+                        addBehaviour(new SignalTurnBehaviour());
+                    }
+                break;
+
+                case HIDERS_WIN:
+                    System.out.println("Hiders win!");
+                    master.gameState = state.END_GAME;
+                break;
+
+                case SEEKERS_WIN:
+                    System.out.println("Seekers win!");
+                    master.gameState = state.END_GAME;
+                break;
+
+                case END_GAME:
+                    System.out.println("Game ended!");
+                    stop();
+                break;
+
             }
-
-            if (((GameMasterAgent) myAgent).counter > ((GameMasterAgent) myAgent).total_rounds) {
-                stop();
-            }
-
-            addBehaviour(new SignalTurnBehaviour());
         }
     }
 
@@ -124,7 +155,7 @@ public class GameMasterAgent extends Agent {
             ArrayList<AID> seekers = ((GameMasterAgent) myAgent).seekers;
             ArrayList<AID> hiders = ((GameMasterAgent) myAgent).hiders;
 
-            if (((GameMasterAgent) myAgent).counter > ((GameMasterAgent) myAgent).warmup) {
+            if (((GameMasterAgent) myAgent).gameState == state.PLAY) {
                 for (int i = 0; i < seekers.size(); ++i) {
                     inf.addReceiver(seekers.get(i));
                 }
@@ -135,10 +166,10 @@ public class GameMasterAgent extends Agent {
             }
 
             inf.setContent("Your Turn");
-                inf.setConversationId("signal-turn");
-                inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
-                myAgent.send(inf);
-                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+            inf.setConversationId("signal-turn");
+            inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
+            myAgent.send(inf);
+            System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
         }
     }
 
