@@ -1,56 +1,64 @@
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.time.Instant;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 public class Logger {
 
-    private static String master_agents_file;
-    private static String hiders_file;
-    private static String seekers_file;
-    private static String logs_folder;
+    private static Path out_master_agents;
+    private static Path out_hiders;
+    private static Path out_seekers;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss");
 
     public static void init() {
-        String now = Instant.now().toString();
-        master_agents_file = "master_agents_" + now + ".txt";
-        hiders_file = "hiders" + now + ".txt";
-        seekers_file = "seekers" + now + ".txt";
-        logs_folder = "logs/";
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String now = sdf.format(timestamp);
+
+        String logs_folder = "logs/";
+        String master_agents_file = logs_folder + "master_agents_" + now + ".txt";
+        String hiders_file = logs_folder + "hiders_" + now + ".txt";
+        String seekers_file = logs_folder + "seekers_" + now + ".txt";
 
         File directory = new File("logs/");
         if (!directory.exists()) {
             directory.mkdir();
         }
+
+        out_master_agents = Paths.get(master_agents_file);
+        out_hiders = Paths.get(hiders_file);
+        out_seekers = Paths.get(seekers_file);
     }
 
     public static void writeLog(String content, String file) {
 
-        String fileName = logs_folder;
+        Path path = null;
 
         switch (file) {
         case "hiders":
-            fileName += hiders_file;
+            path = out_hiders;
             break;
         case "seekers":
-            fileName += seekers_file;
+            path = out_seekers;
             break;
         case "master":
-            fileName += master_agents_file;
+            path = out_master_agents;
             break;
         default:
             break;
         }
 
-        try (FileWriter fw = new FileWriter(fileName, true);
-                BufferedWriter bw = new BufferedWriter(fw);
-                PrintWriter out = new PrintWriter(bw)) {
-            out.println(content);
+        try {
+            Files.write(path, Arrays.asList(content), StandardCharsets.UTF_8,
+                    Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
         } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
