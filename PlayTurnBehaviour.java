@@ -50,6 +50,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
                     //TO DO: move hider
                 }
                 else {
+                    // addBehaviour(new ListenSeekersBehaviour());
                     //TO DO: move seeker
                 }
                 this.turnState = state.ASK_APPROVAL;
@@ -80,7 +81,7 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
         request.addReceiver(agent.getMasterAID());
 
-        request.setContent(agent.getPos().getX() + " " + agent.getPos().getY() + " " + agent.getCurrOrientation());
+        request.setContent("FOV_REQ;" + agent.getPos().getX() + ";" + agent.getPos().getY() + ";" + agent.getCurrOrientation());
 
         request.setConversationId("req" + agent.getAID().getName());
         request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
@@ -96,17 +97,17 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
         //receive FOV
         reply = myAgent.receive(mt);
         if (reply != null) {
-
+            String content = reply.getContent();
+            String[] splited = content.split(";");
+            
             // Reply received
-            if (reply.getPerformative() == ACLMessage.INFORM) {
-
-                String content = reply.getContent();
+            if (splited[0].equals("FOV")) {
                 System.out.println("Agent " + agent.getAID().getName() + " received:" + content);
-                String[] splited = content.split(";");
+                
 
                 LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
 
-                for(int i = 0; i < splited.length; i++){
+                for(int i = 1; i < splited.length; i++){
                     String[] coordinates = splited[i].split(",");
                     cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
                 }

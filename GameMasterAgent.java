@@ -242,13 +242,15 @@ public class GameMasterAgent extends Agent {
                     
                     // Request received
                     String content = request.getContent();
-                    splited = content.split("\\s+");
-                    step = 1;
+                    splited = content.split(";");
+                    if (splited[0].equals("FOV_REQ")) {
+                        step = 1;
+                    }
                 }
                 break;
             case 1:// calc FOV
-                fov = new FieldOfView(new Position(Integer.parseInt(splited[0]), Integer.parseInt(splited[1])),
-                        Double.parseDouble(splited[2]));
+                fov = new FieldOfView(new Position(Integer.parseInt(splited[1]), Integer.parseInt(splited[2])),
+                        Double.parseDouble(splited[3]));
                 fov.calcCellsSeen(((GameMasterAgent) myAgent).getWorld());
                 step = 2;
                 break;
@@ -257,9 +259,14 @@ public class GameMasterAgent extends Agent {
                 ACLMessage reply = request.createReply();
                 reply.setPerformative(ACLMessage.INFORM);
                 
-                String content = "";
+                String content = "FOV;";
+                int x = Integer.parseInt(splited[1]);
+                int y = Integer.parseInt(splited[2]);
                 for (Position cell : fov.getCellsSeen()) {
-                    content += cell.x + "," + cell.y + ";";
+                    if (world[y][x] == 'S' &&  world[cell.y][cell.x] == 'H') 
+                        content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
+                    else if (world[y][x] == 'H' &&  world[cell.y][cell.x] == 'S') 
+                        content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
                 }
 
                 reply.setContent(content);
