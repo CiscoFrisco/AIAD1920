@@ -112,6 +112,28 @@ public class GameAgent extends Agent {
         this.masterAID = masterAID;
     }
 
+    public Position getClosestOpponent(){
+
+        double min_distance = 999;
+        Position closest = null;
+
+        for(Position opponent : cellsSeen){
+            double distance = getDistance(opponent, pos);
+            if( distance <= min_distance){
+                min_distance = distance;
+                closest = opponent;
+            }
+        }
+
+        return closest;
+    }
+
+    public double getDistance(Position p1, Position p2){
+        double deltaX = p2.getX() - p1.getX();
+        double deltaY = p2.getY() - p1.getY();
+        return Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+    }
+
 
     public class FOVRequestBehaviour extends OneShotBehaviour {
 
@@ -223,33 +245,6 @@ public class GameAgent extends Agent {
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
-        }
-    }
-
-    public class PositionReceiveBehaviour extends OneShotBehaviour {
-
-        private String[] content;
-
-        public PositionReceiveBehaviour(String[] content) {
-            super();
-            this.content = content;
-        }
-
-        public void action() {
-
-            ArrayList<Position> opponents = new ArrayList<>();
-
-            for (int i = 1; i < content.length; i++) {
-                String[] coordinates = content[i].split(",");
-                opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
-            }
-
-            ((GameAgent) myAgent).addOpponents(opponents);
-            // ((GameAgent) myAgent).removeDuplicateOpponents();
-
-            for(Position opponent : ((GameAgent)myAgent).getCellsSeen()){
-                System.out.println(opponent.getX() + "|" + opponent.getY() + "->" + myAgent.getAID().getName());
-            }
         }
     }
 }

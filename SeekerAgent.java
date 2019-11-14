@@ -105,11 +105,8 @@ public class SeekerAgent extends GameAgent {
                         addBehaviour(new AvailableMovesReceiveBehaviour(content_splited, ((SeekerAgent) myAgent).getSeekers()));
                     break;
                 case "OPPONENTS":
-                    addBehaviour(new PositionReceiveBehaviour(content_splited));
-                    ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
-                    if(((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()){
-                        ((SeekerAgent) myAgent).setNum_replies(0);
-                    }
+                    addBehaviour(new KnownHidersReceiveBehaviour(content_splited));
+                    
                 default:
                     break;
                 }
@@ -141,5 +138,42 @@ public class SeekerAgent extends GameAgent {
 
     public void setNum_replies(int num_replies) {
         this.num_replies = num_replies;
+    }
+
+    public class KnownHidersReceiveBehaviour extends OneShotBehaviour {
+
+        private String[] content;
+
+        public KnownHidersReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+        }
+
+        public void action() {
+
+            ArrayList<Position> opponents = new ArrayList<>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((SeekerAgent) myAgent).addOpponents(opponents);
+            ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
+
+            if (((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()) {
+                ((SeekerAgent) myAgent).setNum_replies(0);
+                Position hider = ((SeekerAgent)myAgent).getClosestOpponent();
+                if(hider != null){
+                    System.out.println("CLOSEST_HIDER: " + hider.getX() + "|" + hider.getY());
+                }
+            }
+
+            // ((GameAgent) myAgent).removeDuplicateOpponents();
+
+            for (Position opponent : ((SeekerAgent) myAgent).getCellsSeen()) {
+                System.out.println(opponent.getX() + "|" + opponent.getY() + "->" + myAgent.getAID().getName());
+            }
+        }
     }
 }
