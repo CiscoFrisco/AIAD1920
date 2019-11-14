@@ -194,6 +194,7 @@ public class GameMasterAgent extends Agent {
         }
     }
 
+
     public class SignalWarmupEndBehaviour extends SimpleBehaviour {
 
         private int step = 0;
@@ -245,18 +246,17 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public class FOVRequestsBehaviour extends SimpleBehaviour {
+
+    public class FOVRequestsBehaviour extends OneShotBehaviour {
 
         private MessageTemplate mt; // The template to receive replies
         private ACLMessage request;
         private FieldOfView fov;
         private String[] content;
-        private boolean sent;
 
         public FOVRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
             super();
             this.content = content;
-            this.sent = false;
             this.request = request;
             this.mt = mt;
         }
@@ -283,27 +283,20 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-            this.sent = true;
-            System.out.println(getAID().getName() + " sended:" + reply.getContent());
-        }
-
-        public boolean done() {
-            return this.sent;
+            System.out.println(getAID().getName() + " sended:" + reply.getContent() + " to " + request.getSender().getName());
         }
     }
 
-    public class AvailableMovesReplyBehaviour extends SimpleBehaviour {
+    public class AvailableMovesReplyBehaviour extends OneShotBehaviour {
 
         private MessageTemplate mt; // The template to receive replies
         private ACLMessage request;
         private String[] content;
         private ArrayList<Position> available;
-        private boolean sent;
 
         public AvailableMovesReplyBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
             super();
             this.content = content;
-            this.sent = false;
             this.request = request;
             this.mt = mt;
             available = new ArrayList<Position>();
@@ -335,15 +328,9 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-            this.sent = true;
 
             System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
         }
-
-        public boolean done() {
-            return this.sent;
-        }
-
     }
 
     public char[][] getWorld() {

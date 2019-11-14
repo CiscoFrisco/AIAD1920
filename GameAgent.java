@@ -121,6 +121,7 @@ public class GameAgent extends Agent {
         this.masterAID = masterAID;
     }
 
+
     public class FOVRequestBehaviour extends OneShotBehaviour {
 
         public void action() {
@@ -155,7 +156,7 @@ public class GameAgent extends Agent {
     }
 
     public class FOVReceiveBehaviour extends OneShotBehaviour {
-
+        
         private String[] content;
 
         public FOVReceiveBehaviour(String[] content) {
@@ -164,7 +165,6 @@ public class GameAgent extends Agent {
         }
 
         public void action() {
-
             LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
 
             for (int i = 1; i < content.length; i++) {
@@ -180,12 +180,12 @@ public class GameAgent extends Agent {
     public class AvailableMovesReceiveBehaviour extends OneShotBehaviour {
 
         private String[] content;
-        private ArrayList<AID> opponentAID;
+        private ArrayList<AID> partnersAID;
 
-        public AvailableMovesReceiveBehaviour(String[] content, ArrayList<AID> opponentAID) {
+        public AvailableMovesReceiveBehaviour(String[] content, ArrayList<AID> partnersAID) {
             super();
             this.content = content;
-            this.opponentAID = opponentAID;
+            this.partnersAID = partnersAID;
         }
 
         public void action() {
@@ -198,7 +198,7 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).setMovesAvailable(moves);
-            addBehaviour(new PositionRequestBehaviour(this.opponentAID));
+            addBehaviour(new PositionRequestBehaviour(this.partnersAID));
         }
     }
 

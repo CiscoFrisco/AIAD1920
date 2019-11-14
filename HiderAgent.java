@@ -80,7 +80,7 @@ public class HiderAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
                 // Request received4
-                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent());
+                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -88,7 +88,9 @@ public class HiderAgent extends GameAgent {
                 switch (header) {
                 case "PLAY":
                     addBehaviour(new FOVRequestBehaviour());
+                    break;
                 case "FOV":
+                    System.out.println("FOV_LISTENER: " + myAgent.getAID().getName());
                     addBehaviour(new FOVReceiveBehaviour(content_splited));
                     break;
                 case "AM":
