@@ -49,15 +49,14 @@ public class HiderAgent extends GameAgent {
 
                 try {
                     DFAgentDescription[] result_hiders = DFService.search(myAgent, template_hiders);
-                    AID[] temp_hiders = new AID[result_hiders.length];
+                    hiders = new ArrayList<AID>();
 
                     for (int i = 0; i < result_hiders.length; ++i) {
-                        if (!result_hiders[i].getName().equals(myAgent.getAID().getName())) {
-                            temp_hiders[i] = result_hiders[i].getName();
+                        String curr_hider = result_hiders[i].getName().getName();
+                        if (!curr_hider.equals(myAgent.getAID().getName())) {
+                            hiders.add(result_hiders[i].getName());
                         }
                     }
-
-                    hiders = new ArrayList<AID>(Arrays.asList(temp_hiders));
 
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
@@ -81,20 +80,19 @@ public class HiderAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
                 // Request received4
-                System.out.println("Agent" + myAgent.getAID().getName() + " received: " + request.getContent());
+                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
                 header = content_splited[0];
-                System.out.println(header);
                 switch (header) {
                 case "PLAY":
-                    addBehaviour(new RequestInformationBehaviour());
+                    addBehaviour(new FOVRequestBehaviour());
                 case "FOV":
                     addBehaviour(new FOVReceiveBehaviour(content_splited));
                     break;
                 case "AM":
-                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited));
+                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited, ((HiderAgent) myAgent).getHiders()));
                     break;
                 default:
                     break;
@@ -103,6 +101,14 @@ public class HiderAgent extends GameAgent {
                 block();
             }
         }
+    }
+
+    public ArrayList<AID> getHiders() {
+        return hiders;
+    }
+
+    public void setHiders(ArrayList<AID> hiders) {
+        this.hiders = hiders;
     }
 
 }

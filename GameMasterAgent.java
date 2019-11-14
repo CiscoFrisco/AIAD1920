@@ -11,15 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameMasterAgent extends Agent {
-    private enum state {
-        WARMUP, PLAY, HIDERS_WIN, SEEKERS_WIN, END_GAME
-    }
 
     private ArrayList<AID> hiders;
     private ArrayList<AID> seekers;
     char[][] world;
 
-    private state gameState;
     private int rounds;
     private int warmup;
 
@@ -28,7 +24,6 @@ public class GameMasterAgent extends Agent {
         Object[] args = getArguments();
         world = (char[][]) args[0];
 
-        gameState = state.WARMUP;
         rounds = 5;
         warmup = (int) Math.floor(0.4 * rounds);
 
@@ -103,41 +98,43 @@ public class GameMasterAgent extends Agent {
         private String[] content_splited;
         private String header;
 
-        public void action(){
-                
+        public void action() {
+
             mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
             request = myAgent.receive(mt);
             if (request != null) {
                 // Request received
 
-                System.out.println("GameMaster " + myAgent.getAID().getName() + " received: " + request.getContent());
+                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
                 header = content_splited[0];
 
-                switch(header){
-                    case "FOV_REQ":
-                        addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited));
-                        break;
-                    case "AM_REQ":
-                        addBehaviour(new AvailableMovesRequestsBehaviour(request, mt, content_splited));
-                        break;
-                    default:
-                        break;
+                switch (header) {
+                case "FOV_REQ":
+                    addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited));
+                    break;
+                case "AM_REQ":
+                    addBehaviour(new AvailableMovesReplyBehaviour(request, mt, content_splited));
+                    break;
+                default:
+                    break;
                 }
-            }
-            else{
+            } else {
                 block();
             }
         }
     }
 
     public class PlayBehaviour extends TickerBehaviour {
+
         int counter = 0;
+        private boolean seekersWon;
 
         public PlayBehaviour() {
             super(null, 1000);
+            this.seekersWon = false;
         }
 
         public void onTick() {
@@ -145,44 +142,32 @@ public class GameMasterAgent extends Agent {
 
             counter++;
 
-            System.out.println(counter + ": " + master.gameState);
+            System.out.println(counter);
 
-            switch (master.gameState) {
-            case WARMUP:
-                if (counter == master.warmup) {
-                    addBehaviour(new SignalWarmupEndBehaviour());
-                    master.gameState = state.PLAY;
-                }
-                break;
+            if (counter == master.warmup) {
+                addBehaviour(new SignalWarmupEndBehaviour());
+            }
 
-            case PLAY:
-                if (counter > master.rounds) {
-                    master.gameState = state.HIDERS_WIN;
-                } else {
-                    addBehaviour(new SignalTurnBehaviour());
-                }
-                break;
+            if (counter <= master.warmup) {
+                addBehaviour(new SignalTurnBehaviour(true));
+            } else {
+                addBehaviour(new SignalTurnBehaviour(false));
+            }
 
-            case HIDERS_WIN:
-                System.out.println("Hiders win!");
-                master.gameState = state.END_GAME;
-                break;
-
-            case SEEKERS_WIN:
-                System.out.println("Seekers win!");
-                master.gameState = state.END_GAME;
-                break;
-
-            case END_GAME:
-                System.out.println("Game ended!");
+            if (counter > master.rounds) {
                 stop();
-                break;
 
             }
         }
     }
 
     public class SignalTurnBehaviour extends OneShotBehaviour {
+
+        private boolean isWarmup;
+
+        public SignalTurnBehaviour(boolean isWarmup) {
+            this.isWarmup = isWarmup;
+        }
 
         public void action() {
 
@@ -191,10 +176,9 @@ public class GameMasterAgent extends Agent {
             ArrayList<AID> seekers = ((GameMasterAgent) myAgent).seekers;
             ArrayList<AID> hiders = ((GameMasterAgent) myAgent).hiders;
 
-            if (((GameMasterAgent) myAgent).gameState == state.PLAY) {
+            if (!this.isWarmup) {
                 for (int i = 0; i < seekers.size(); ++i) {
                     inf.addReceiver(seekers.get(i));
-                    System.out.println(seekers.get(i).getName());
                 }
             }
 
@@ -206,7 +190,7 @@ public class GameMasterAgent extends Agent {
             inf.setConversationId("signal-turn");
             inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
             myAgent.send(inf);
-            System.out.println("GameMaster " + getAID().getName() + " sended: " + inf.getContent());
+            System.out.println(getAID().getName() + " sended: " + inf.getContent());
         }
     }
 
@@ -230,7 +214,7 @@ public class GameMasterAgent extends Agent {
                 inf.setConversationId("signal-warmup");
                 inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
                 myAgent.send(inf);
-                System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+                System.out.println(getAID().getName() + " sended: " + inf.getContent());
                 // Prepare the template to get acknowledgements
                 mt = MessageTemplate.and(MessageTemplate.MatchConversationId("signal-warmup"),
                         MessageTemplate.MatchInReplyTo(inf.getReplyWith()));
@@ -246,8 +230,8 @@ public class GameMasterAgent extends Agent {
                         num_replies++;
                         String content = reply.getContent();
                         String[] splited = content.split("\\s+");
-                        System.out.println("GameMaster " + getAID().getName() + " received:" + reply.getContent()
-                                + " from " + splited[1]);
+                        System.out.println(
+                                getAID().getName() + " received:" + reply.getContent() + " from " + splited[1]);
                     }
                 } else {
                     block();
@@ -292,23 +276,23 @@ public class GameMasterAgent extends Agent {
 
             for (Position cell : fov.getCellsSeen()) {
                 if (world[y][x] == 'S' && world[cell.y][cell.x] == 'H')
-                reply_content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
+                    reply_content += cell.x + "," + cell.y + ";";
                 else if (world[y][x] == 'H' && world[cell.y][cell.x] == 'S')
-                reply_content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
+                    reply_content += cell.x + "," + cell.y + ";";
             }
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
             this.sent = true;
-            System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
+            System.out.println(getAID().getName() + " sended:" + reply.getContent());
         }
 
-        public boolean done(){
+        public boolean done() {
             return this.sent;
         }
     }
 
-    public class AvailableMovesRequestsBehaviour extends SimpleBehaviour {
+    public class AvailableMovesReplyBehaviour extends SimpleBehaviour {
 
         private MessageTemplate mt; // The template to receive replies
         private ACLMessage request;
@@ -316,7 +300,7 @@ public class GameMasterAgent extends Agent {
         private ArrayList<Position> available;
         private boolean sent;
 
-        public AvailableMovesRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
+        public AvailableMovesReplyBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
             super();
             this.content = content;
             this.sent = false;
@@ -332,8 +316,11 @@ public class GameMasterAgent extends Agent {
 
             for (int i = x - 1; i <= x + 1; i++) {
                 for (int j = y - 1; j <= y + 1; j++) {
-                    if (world[j][i] == '+') {
-                        available.add(new Position(i, j));
+
+                    if ((i >= 0 && i < world.length) && (j >= 0 && j < world[i].length)) {
+                        if (world[j][i] == '+') {
+                            available.add(new Position(i, j));
+                        }
                     }
                 }
             }
@@ -353,9 +340,10 @@ public class GameMasterAgent extends Agent {
             System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
         }
 
-        public boolean done(){
+        public boolean done() {
             return this.sent;
         }
+
     }
 
     public char[][] getWorld() {

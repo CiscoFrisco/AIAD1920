@@ -18,6 +18,7 @@ public class GameAgent extends Agent {
     boolean isGrabbing;
     double currOrientation;
     private LinkedHashSet<Position> cellsSeen;
+    private ArrayList<Position> opponentsKnown;
     private ArrayList<Position> moves;
 
     public void setup() {
@@ -27,9 +28,38 @@ public class GameAgent extends Agent {
         isGrabbing = false;
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
+        opponentsKnown = new ArrayList<Position>();
         moves = new ArrayList<Position>();
 
         initMasterAID();
+    }
+
+    public ArrayList<Position> getOpponents() {
+        return opponentsKnown;
+    }
+
+    public void setOpponents(ArrayList<Position> opponents) {
+        this.opponentsKnown = opponents;
+    }
+
+    public void addOpponents(ArrayList<Position> opponents) {
+        for (Position opponent : opponents)
+            this.opponentsKnown.add(opponent);
+    }
+
+    public void removeDuplicateOpponents() {
+
+        ArrayList<Position> newList = new ArrayList<Position>();
+        // Traverse through the first list
+        for (Position pos : this.opponentsKnown) {
+
+            if (!newList.contains(pos)) {
+                newList.add(pos);
+            }
+        }
+
+        // return the new list
+        setOpponents(newList);
     }
 
     public void initMasterAID() {
@@ -103,7 +133,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            System.out.println("Agent" + ((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
@@ -120,19 +150,17 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            System.out.println("Agent" + ((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
-    public class FOVReceiveBehaviour extends SimpleBehaviour {
+    public class FOVReceiveBehaviour extends OneShotBehaviour {
 
         private String[] content;
-        private boolean received;
 
         public FOVReceiveBehaviour(String[] content) {
             super();
             this.content = content;
-            this.received = false;
         }
 
         public void action() {
@@ -145,23 +173,19 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).setCellsSeen(cells);
-            this.received = true;
-        }
-
-        public boolean done() {
-            return this.received;
+            addBehaviour(new AvailableMovesRequestBehaviour());
         }
     }
 
-    public class AvailableMovesReceiveBehaviour extends SimpleBehaviour {
+    public class AvailableMovesReceiveBehaviour extends OneShotBehaviour {
 
         private String[] content;
-        private boolean received;
+        private ArrayList<AID> opponentAID;
 
-        public AvailableMovesReceiveBehaviour(String[] content) {
+        public AvailableMovesReceiveBehaviour(String[] content, ArrayList<AID> opponentAID) {
             super();
             this.content = content;
-            this.received = false;
+            this.opponentAID = opponentAID;
         }
 
         public void action() {
@@ -174,20 +198,63 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).setMovesAvailable(moves);
-            this.received = true;
-        }
-
-        public boolean done() {
-            return this.received;
+            addBehaviour(new PositionRequestBehaviour(this.opponentAID));
         }
     }
 
-    public class RequestInformationBehaviour extends OneShotBehaviour {
+    public class PositionRequestBehaviour extends OneShotBehaviour {
+
+        private ArrayList<AID> opponentAID;
+
+        public PositionRequestBehaviour(ArrayList<AID> opponentAID) {
+            super();
+            this.opponentAID = opponentAID;
+        }
 
         public void action() {
-            addBehaviour(new FOVRequestBehaviour());
-            addBehaviour(new AvailableMovesRequestBehaviour());
+            // send Position and Orientation to Master
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+
+            for (int i = 0; i < this.opponentAID.size(); ++i) {
+                request.addReceiver(this.opponentAID.get(i));
+            }
+
+            String content = "OPPONENTS;";
+
+            LinkedHashSet<Position> hiders_seen = ((GameAgent) myAgent).getCellsSeen();
+
+            for (Position hider : hiders_seen) {
+                content += hider.getX() + "," + hider.getY() + ";";
+            }
+
+            request.setContent(content);
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
+            ((GameAgent) myAgent).send(request);
+            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
+    public class PositionReceiveBehaviour extends OneShotBehaviour {
+
+        private String[] content;
+
+        public PositionReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+        }
+
+        public void action() {
+
+            ArrayList<Position> opponents = new ArrayList<>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((SeekerAgent) myAgent).addOpponents(opponents);
+            ((SeekerAgent) myAgent).removeDuplicateOpponents();
+        }
+    }
 }

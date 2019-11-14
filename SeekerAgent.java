@@ -15,9 +15,11 @@ public class SeekerAgent extends GameAgent {
 
     private ArrayList<AID> seekers;
     private boolean warming;
+    private int num_replies;
 
     public void setup() {
         super.setup();
+        this.num_replies = 0;
         this.warming = true;
         registerSeeker();
         getSeekersAID();
@@ -51,15 +53,14 @@ public class SeekerAgent extends GameAgent {
 
                 try {
                     DFAgentDescription[] result_seekers = DFService.search(myAgent, template_seekers);
-                    AID[] temp_seekers = new AID[result_seekers.length];
+                    seekers = new ArrayList<AID>();
 
                     for (int i = 0; i < result_seekers.length; ++i) {
-                        if (!result_seekers[i].getName().equals(myAgent.getAID().getName())) {
-                            temp_seekers[i] = result_seekers[i].getName();
+                        String curr_seeker = result_seekers[i].getName().getName();
+                        if (!curr_seeker.equals(myAgent.getAID().getName())) {
+                            seekers.add(result_seekers[i].getName());
                         }
                     }
-
-                    seekers = new ArrayList<AID>(Arrays.asList(temp_seekers));
 
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
@@ -82,26 +83,33 @@ public class SeekerAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
                 // Request received4
-                System.out.println("Agent" + myAgent.getAID().getName() + " received: " + request.getContent());
+                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
                 header = content_splited[0];
                 switch (header) {
                 case "WARM_END":
-                    ((SeekerAgent)myAgent).setWarming(false);
+                    ((SeekerAgent) myAgent).setWarming(false);
                     break;
                 case "PLAY":
-                    if(!((SeekerAgent)myAgent).isWarming())
-                        addBehaviour(new RequestInformationBehaviour());
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new FOVRequestBehaviour());
                 case "FOV":
-                    if(!((SeekerAgent)myAgent).isWarming())
-                    addBehaviour(new FOVReceiveBehaviour(content_splited));
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new FOVReceiveBehaviour(content_splited));
                     break;
                 case "AM":
-                    if(!((SeekerAgent)myAgent).isWarming())
-                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited));
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new AvailableMovesReceiveBehaviour(content_splited, ((SeekerAgent) myAgent).getSeekers()));
                     break;
+                case "OPPONENTS":
+                    addBehaviour(new PositionReceiveBehaviour(content_splited));
+                    ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
+                    if(((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()){
+                        System.out.println("WUT: " + ((SeekerAgent) myAgent).getNum_replies());
+                        ((SeekerAgent) myAgent).setNum_replies(0);
+                    }
                 default:
                     break;
                 }
@@ -117,5 +125,21 @@ public class SeekerAgent extends GameAgent {
 
     public void setWarming(boolean warming) {
         this.warming = warming;
+    }
+
+    public ArrayList<AID> getSeekers() {
+        return seekers;
+    }
+
+    public void setSeekers(ArrayList<AID> seekers) {
+        this.seekers = seekers;
+    }
+
+    public int getNum_replies() {
+        return num_replies;
+    }
+
+    public void setNum_replies(int num_replies) {
+        this.num_replies = num_replies;
     }
 }
