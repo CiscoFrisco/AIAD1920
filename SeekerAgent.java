@@ -83,7 +83,7 @@ public class SeekerAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
                 // Request received4
-                System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
+                // System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -97,7 +97,6 @@ public class SeekerAgent extends GameAgent {
                         addBehaviour(new FOVRequestBehaviour());
                     break;
                 case "FOV":
-                    System.out.println("FOV_LISTENER: " + myAgent.getAID().getName());
                     if (!((SeekerAgent) myAgent).isWarming())
                         addBehaviour(new FOVReceiveBehaviour(content_splited));
                     break;
@@ -109,8 +108,8 @@ public class SeekerAgent extends GameAgent {
                     addBehaviour(new PositionReceiveBehaviour(content_splited));
                     ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
                     if(((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()){
-                        System.out.println("WUT: " + ((SeekerAgent) myAgent).getNum_replies());
                         ((SeekerAgent) myAgent).setNum_replies(0);
+
                     }
                 default:
                     break;

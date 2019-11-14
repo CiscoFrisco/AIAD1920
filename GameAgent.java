@@ -134,7 +134,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
@@ -151,7 +151,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
@@ -231,7 +231,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
         }
     }
 
@@ -255,6 +255,12 @@ public class GameAgent extends Agent {
 
             ((SeekerAgent) myAgent).addOpponents(opponents);
             ((SeekerAgent) myAgent).removeDuplicateOpponents();
+
+            System.out.println(myAgent.getAID().getName());
+
+            for(Position opponent : opponentsKnown){
+                System.out.println(opponent.getX() + "|" + opponent.getY());
+            }
         }
     }
 }
