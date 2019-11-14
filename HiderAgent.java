@@ -1,6 +1,8 @@
 import jade.core.Agent;
 import jade.core.AID;
 import jade.core.behaviours.*;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -11,13 +13,13 @@ import java.util.Arrays;
 
 public class HiderAgent extends GameAgent {
 
-    private ArrayList<AID> seekers;
+    private ArrayList<AID> hiders;
 
     public void setup() {
         super.setup();
         registerHider();
         getHidersAID();
-        addBehaviour(new WaitForTurnBehaviour(this));
+        addBehaviour(new ListenRequestsBehaviour());
     }
 
     public void registerHider() {
@@ -43,7 +45,7 @@ public class HiderAgent extends GameAgent {
                 DFAgentDescription template_hiders = new DFAgentDescription();
                 ServiceDescription sd_hiders = new ServiceDescription();
                 sd_hiders.setType("hider");
-                template_seekers.addServices(sd_hiders);
+                template_hiders.addServices(sd_hiders);
 
                 try {
                     DFAgentDescription[] result_hiders = DFService.search(myAgent, template_hiders);
@@ -63,6 +65,44 @@ public class HiderAgent extends GameAgent {
             }
         });
 
+    }
+
+
+    public class ListenRequestsBehaviour extends CyclicBehaviour {
+
+        private MessageTemplate mt; // The template to receive replies
+        private ACLMessage request;
+        private String[] content_splited;
+        private String header;
+
+        public void action() {
+
+            mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+            request = myAgent.receive(mt);
+            if (request != null) {
+                // Request received4
+                System.out.println("Agent" + myAgent.getAID().getName() + " received: " + request.getContent());
+
+                String content = request.getContent();
+                content_splited = content.split(";");
+                header = content_splited[0];
+                System.out.println(header);
+                switch (header) {
+                case "PLAY":
+                    addBehaviour(new RequestInformationBehaviour());
+                case "FOV":
+                    addBehaviour(new FOVReceiveBehaviour(content_splited));
+                    break;
+                case "AM":
+                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited));
+                    break;
+                default:
+                    break;
+                }
+            } else {
+                block();
+            }
+        }
     }
 
 }

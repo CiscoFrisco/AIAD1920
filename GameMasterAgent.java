@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameMasterAgent extends Agent {
-    private enum state {WARMUP, PLAY, HIDERS_WIN, SEEKERS_WIN, END_GAME}
+    private enum state {
+        WARMUP, PLAY, HIDERS_WIN, SEEKERS_WIN, END_GAME
+    }
 
     private ArrayList<AID> hiders;
     private ArrayList<AID> seekers;
@@ -21,7 +23,6 @@ public class GameMasterAgent extends Agent {
     private int rounds;
     private int warmup;
 
-
     public void setup() {
 
         Object[] args = getArguments();
@@ -30,7 +31,6 @@ public class GameMasterAgent extends Agent {
         gameState = state.WARMUP;
         rounds = 5;
         warmup = (int) Math.floor(0.4 * rounds);
-
 
         registerMaster();
         getAgentsAID();
@@ -86,7 +86,7 @@ public class GameMasterAgent extends Agent {
                     hiders = new ArrayList<AID>(Arrays.asList(temp_hiders));
 
                     addBehaviour(new PlayBehaviour());
-                    addBehaviour(new FOVRequestsBehaviour());
+                    addBehaviour(new ListenRequestsBehaviour());
 
                 } catch (FIPAException fe) {
                     fe.printStackTrace();
@@ -94,6 +94,43 @@ public class GameMasterAgent extends Agent {
             }
         });
 
+    }
+
+    public class ListenRequestsBehaviour extends CyclicBehaviour {
+
+        private MessageTemplate mt; // The template to receive replies
+        private ACLMessage request;
+        private String[] content_splited;
+        private String header;
+
+        public void action(){
+                
+            mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+            request = myAgent.receive(mt);
+            if (request != null) {
+                // Request received
+
+                System.out.println("GameMaster " + myAgent.getAID().getName() + " received: " + request.getContent());
+
+                String content = request.getContent();
+                content_splited = content.split(";");
+                header = content_splited[0];
+
+                switch(header){
+                    case "FOV_REQ":
+                        addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited));
+                        break;
+                    case "AM_REQ":
+                        addBehaviour(new AvailableMovesRequestsBehaviour(request, mt, content_splited));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else{
+                block();
+            }
+        }
     }
 
     public class PlayBehaviour extends TickerBehaviour {
@@ -111,35 +148,34 @@ public class GameMasterAgent extends Agent {
             System.out.println(counter + ": " + master.gameState);
 
             switch (master.gameState) {
-                case WARMUP:
-                    if (counter == master.warmup) {
-                        addBehaviour(new SignalWarmupEndBehaviour());
-                        master.gameState = state.PLAY;
-                    }
+            case WARMUP:
+                if (counter == master.warmup) {
+                    addBehaviour(new SignalWarmupEndBehaviour());
+                    master.gameState = state.PLAY;
+                }
                 break;
 
-                case PLAY:
-                    if (counter > master.rounds) {
-                        master.gameState = state.HIDERS_WIN;
-                    }
-                    else {
-                        addBehaviour(new SignalTurnBehaviour());
-                    }
+            case PLAY:
+                if (counter > master.rounds) {
+                    master.gameState = state.HIDERS_WIN;
+                } else {
+                    addBehaviour(new SignalTurnBehaviour());
+                }
                 break;
 
-                case HIDERS_WIN:
-                    System.out.println("Hiders win!");
-                    master.gameState = state.END_GAME;
+            case HIDERS_WIN:
+                System.out.println("Hiders win!");
+                master.gameState = state.END_GAME;
                 break;
 
-                case SEEKERS_WIN:
-                    System.out.println("Seekers win!");
-                    master.gameState = state.END_GAME;
+            case SEEKERS_WIN:
+                System.out.println("Seekers win!");
+                master.gameState = state.END_GAME;
                 break;
 
-                case END_GAME:
-                    System.out.println("Game ended!");
-                    stop();
+            case END_GAME:
+                System.out.println("Game ended!");
+                stop();
                 break;
 
             }
@@ -158,6 +194,7 @@ public class GameMasterAgent extends Agent {
             if (((GameMasterAgent) myAgent).gameState == state.PLAY) {
                 for (int i = 0; i < seekers.size(); ++i) {
                     inf.addReceiver(seekers.get(i));
+                    System.out.println(seekers.get(i).getName());
                 }
             }
 
@@ -165,11 +202,11 @@ public class GameMasterAgent extends Agent {
                 inf.addReceiver(hiders.get(i));
             }
 
-            inf.setContent("Your Turn");
+            inf.setContent("PLAY;");
             inf.setConversationId("signal-turn");
             inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
             myAgent.send(inf);
-            System.out.println("GameMaster" + getAID().getName() + " sended: " + inf.getContent());
+            System.out.println("GameMaster " + getAID().getName() + " sended: " + inf.getContent());
         }
     }
 
@@ -189,7 +226,7 @@ public class GameMasterAgent extends Agent {
                 for (int i = 0; i < seekers.size(); ++i) {
                     inf.addReceiver(seekers.get(i));
                 }
-                inf.setContent("Warmup Ended");
+                inf.setContent("WARM_END");
                 inf.setConversationId("signal-warmup");
                 inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
                 myAgent.send(inf);
@@ -224,57 +261,100 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public class FOVRequestsBehaviour extends CyclicBehaviour {
+    public class FOVRequestsBehaviour extends SimpleBehaviour {
 
-        private int step = 0;
         private MessageTemplate mt; // The template to receive replies
         private ACLMessage request;
         private FieldOfView fov;
-        private String[] splited = new String[100];
+        private String[] content;
+        private boolean sent;
+
+        public FOVRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
+            super();
+            this.content = content;
+            this.sent = false;
+            this.request = request;
+            this.mt = mt;
+        }
 
         public void action() {
 
-            switch (step) {
-            case 0: // listen for request
-                mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-                request = myAgent.receive(mt);
-                if (request != null) {
-                    
-                    // Request received
-                    String content = request.getContent();
-                    splited = content.split(";");
-                    if (splited[0].equals("FOV_REQ")) {
-                        step = 1;
+            fov = new FieldOfView(new Position(Integer.parseInt(content[1]), Integer.parseInt(content[2])),
+                    Double.parseDouble(content[3]));
+            fov.calcCellsSeen(((GameMasterAgent) myAgent).getWorld());
+
+            ACLMessage reply = request.createReply();
+            reply.setPerformative(ACLMessage.INFORM);
+
+            String reply_content = "FOV;";
+            int x = Integer.parseInt(content[1]);
+            int y = Integer.parseInt(content[2]);
+
+            for (Position cell : fov.getCellsSeen()) {
+                if (world[y][x] == 'S' && world[cell.y][cell.x] == 'H')
+                reply_content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
+                else if (world[y][x] == 'H' && world[cell.y][cell.x] == 'S')
+                reply_content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
+            }
+
+            reply.setContent(reply_content);
+            ((GameMasterAgent) myAgent).send(reply);
+            this.sent = true;
+            System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
+        }
+
+        public boolean done(){
+            return this.sent;
+        }
+    }
+
+    public class AvailableMovesRequestsBehaviour extends SimpleBehaviour {
+
+        private MessageTemplate mt; // The template to receive replies
+        private ACLMessage request;
+        private String[] content;
+        private ArrayList<Position> available;
+        private boolean sent;
+
+        public AvailableMovesRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
+            super();
+            this.content = content;
+            this.sent = false;
+            this.request = request;
+            this.mt = mt;
+            available = new ArrayList<Position>();
+        }
+
+        public void action() {
+
+            int x = Integer.parseInt(content[1]);
+            int y = Integer.parseInt(content[2]);
+
+            for (int i = x - 1; i <= x + 1; i++) {
+                for (int j = y - 1; j <= y + 1; j++) {
+                    if (world[j][i] == '+') {
+                        available.add(new Position(i, j));
                     }
                 }
-                break;
-            case 1:// calc FOV
-                fov = new FieldOfView(new Position(Integer.parseInt(splited[1]), Integer.parseInt(splited[2])),
-                        Double.parseDouble(splited[3]));
-                fov.calcCellsSeen(((GameMasterAgent) myAgent).getWorld());
-                step = 2;
-                break;
-            case 2:// send FOV
-                // construct message
-                ACLMessage reply = request.createReply();
-                reply.setPerformative(ACLMessage.INFORM);
-                
-                String content = "FOV;";
-                int x = Integer.parseInt(splited[1]);
-                int y = Integer.parseInt(splited[2]);
-                for (Position cell : fov.getCellsSeen()) {
-                    if (world[y][x] == 'S' &&  world[cell.y][cell.x] == 'H') 
-                        content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
-                    else if (world[y][x] == 'H' &&  world[cell.y][cell.x] == 'S') 
-                        content += cell.x + "," + cell.y + "," + world[cell.y][cell.x] + ";";
-                }
-
-                reply.setContent(content);
-                ((GameMasterAgent)myAgent).send(reply);
-                System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
-                step = 0;
-                break;
             }
+
+            ACLMessage reply = request.createReply();
+            reply.setPerformative(ACLMessage.INFORM);
+
+            String reply_content = "AM;";
+            for (Position move : available) {
+                reply_content += move.x + "," + move.y + ";";
+            }
+
+            reply.setContent(reply_content);
+            ((GameMasterAgent) myAgent).send(reply);
+            this.sent = true;
+
+            System.out.println("GameMaster " + getAID().getName() + " sended:" + reply.getContent());
+        }
+
+        public boolean done(){
+            return this.sent;
         }
     }
 

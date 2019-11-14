@@ -8,6 +8,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.util.LinkedHashSet;
+import java.util.ArrayList;
 
 public class GameAgent extends Agent {
 
@@ -17,6 +18,7 @@ public class GameAgent extends Agent {
     boolean isGrabbing;
     double currOrientation;
     private LinkedHashSet<Position> cellsSeen;
+    private ArrayList<Position> moves;
 
     public void setup() {
 
@@ -25,6 +27,7 @@ public class GameAgent extends Agent {
         isGrabbing = false;
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
+        moves = new ArrayList<Position>();
 
         initMasterAID();
     }
@@ -72,12 +75,119 @@ public class GameAgent extends Agent {
         this.cellsSeen = cellsSeen;
     }
 
+    public ArrayList<Position> getMovesAvailable() {
+        return moves;
+    }
+
+    public void setMovesAvailable(ArrayList<Position> moves) {
+        this.moves = moves;
+    }
+
     public AID getMasterAID() {
         return masterAID;
     }
 
     public void setMasterAID(AID masterAID) {
         this.masterAID = masterAID;
+    }
+
+    public class FOVRequestBehaviour extends OneShotBehaviour {
+
+        public void action() {
+            // send Position and Orientation to Master
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(((GameAgent) myAgent).getMasterAID());
+            request.setContent("FOV_REQ;" + ((GameAgent) myAgent).getPos().getX() + ";"
+                    + ((GameAgent) myAgent).getPos().getY() + ";" + ((GameAgent) myAgent).getCurrOrientation());
+
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
+            ((GameAgent) myAgent).send(request);
+            System.out.println("Agent" + ((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+        }
+    }
+
+    public class AvailableMovesRequestBehaviour extends OneShotBehaviour {
+
+        public void action() {
+            // send Position to Master
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(((GameAgent) myAgent).getMasterAID());
+
+            request.setContent("AM_REQ;" + ((GameAgent) myAgent).getPos().getX() + ";"
+                    + ((GameAgent) myAgent).getPos().getY() + ";");
+
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
+            ((GameAgent) myAgent).send(request);
+            System.out.println("Agent" + ((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+        }
+    }
+
+    public class FOVReceiveBehaviour extends SimpleBehaviour {
+
+        private String[] content;
+        private boolean received;
+
+        public FOVReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+            this.received = false;
+        }
+
+        public void action() {
+
+            LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((GameAgent) myAgent).setCellsSeen(cells);
+            this.received = true;
+        }
+
+        public boolean done() {
+            return this.received;
+        }
+    }
+
+    public class AvailableMovesReceiveBehaviour extends SimpleBehaviour {
+
+        private String[] content;
+        private boolean received;
+
+        public AvailableMovesReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+            this.received = false;
+        }
+
+        public void action() {
+
+            ArrayList<Position> moves = new ArrayList<>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                moves.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((GameAgent) myAgent).setMovesAvailable(moves);
+            this.received = true;
+        }
+
+        public boolean done() {
+            return this.received;
+        }
+    }
+
+    public class RequestInformationBehaviour extends OneShotBehaviour {
+
+        public void action() {
+            addBehaviour(new FOVRequestBehaviour());
+            addBehaviour(new AvailableMovesRequestBehaviour());
+        }
     }
 
 }

@@ -14,12 +14,14 @@ import java.util.Arrays;
 public class SeekerAgent extends GameAgent {
 
     private ArrayList<AID> seekers;
+    private boolean warming;
 
     public void setup() {
         super.setup();
+        this.warming = true;
         registerSeeker();
         getSeekersAID();
-        addBehaviour(new WarmupEndBehaviour());
+        addBehaviour(new ListenRequestsBehaviour());
     }
 
     public void registerSeeker() {
@@ -67,58 +69,53 @@ public class SeekerAgent extends GameAgent {
 
     }
 
-    public class WarmupEndBehaviour extends SimpleBehaviour {
+    public class ListenRequestsBehaviour extends CyclicBehaviour {
 
-        private ACLMessage signal;
-
-        public void action() {
-            // Receive signal from master
-            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
-            signal = myAgent.receive(mt);
-
-            if (signal != null) {
-                // Signal received
-                System.out.println("Seeker " + getAID().getName() + " received: " + signal.getContent());
-                ACLMessage reply = signal.createReply();
-                reply.setPerformative(ACLMessage.INFORM);
-                reply.setContent("Goucha! " + getAID().getName());
-                myAgent.send(reply);
-                System.out.println("Seeker " + getAID().getName() + " sended: " + reply.getContent());
-
-                addBehaviour(new WaitForTurnBehaviour((GameAgent) myAgent));
-            }
-        }
-
-        public boolean done() {
-            return signal != null;
-        }
-    }
-
-    public class ListenSeekersBehaviour extends CyclicBehaviour {
-
-        private int step = 0;
         private MessageTemplate mt; // The template to receive replies
         private ACLMessage request;
+        private String[] content_splited;
+        private String header;
 
         public void action() {
 
-            switch (step) {
-            case 0: // send "im listening"
-                mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-                request = myAgent.receive(mt);
-                if (request != null) {
+            mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+            request = myAgent.receive(mt);
+            if (request != null) {
+                // Request received4
+                System.out.println("Agent" + myAgent.getAID().getName() + " received: " + request.getContent());
 
-                    // Request received
-                    String content = request.getContent();
+                String content = request.getContent();
+                content_splited = content.split(";");
+                header = content_splited[0];
+                switch (header) {
+                case "WARM_END":
+                    ((SeekerAgent)myAgent).setWarming(false);
+                    break;
+                case "PLAY":
+                    if(!((SeekerAgent)myAgent).isWarming())
+                        addBehaviour(new RequestInformationBehaviour());
+                case "FOV":
+                    if(!((SeekerAgent)myAgent).isWarming())
+                    addBehaviour(new FOVReceiveBehaviour(content_splited));
+                    break;
+                case "AM":
+                    if(!((SeekerAgent)myAgent).isWarming())
+                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited));
+                    break;
+                default:
+                    break;
                 }
-                break;
-            case 1:// "receive im listening"
-                step = 2;
-                break;
-            case 2:// send FOV
-                break;
+            } else {
+                block();
             }
         }
     }
 
+    public boolean isWarming() {
+        return warming;
+    }
+
+    public void setWarming(boolean warming) {
+        this.warming = warming;
+    }
 }

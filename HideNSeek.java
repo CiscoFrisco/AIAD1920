@@ -18,7 +18,6 @@ public class HideNSeek {
         createContainers();
 
         createGameMaster(world.getWorld());
-
         createHiderAgents(world.getHiders());
         createSeekerAgents(world.getSeekers());
     }
