@@ -11,14 +11,14 @@ import java.util.LinkedHashSet;
 
 
 public class PlayTurnBehaviour extends SimpleBehaviour {
-    private enum state {TURN_START, ASK_FOV, WAIT_FOV, MOVE, ASK_APPROVAL, WAIT_APPROVAL, TURN_END}
-
+    private enum state {START, REQ_FOV, WAIT_FOV, INFORM, LISTEN, MOVE, END}
 
     private MessageTemplate mt;
-    private ACLMessage reply;
+    //private ACLMessage reply;
     private GameAgent agent;
 
-    private state turnState = state.TURN_START;
+    private state turnState = state.START;
+    private int numInfo = 0;
     private boolean done = false;
 
 
@@ -26,96 +26,59 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
         super();
     }
 
+
     public void action(){
         switch(turnState){
 
-            case TURN_START:
+            case START:
                 this.agent = (GameAgent) myAgent;
-                this.turnState = state.ASK_FOV;
+                this.turnState = state.REQ_FOV;
             break;
 
-            case ASK_FOV:
-                this.requestFOV();
+            case REQ_FOV:
+                mt = this.agent.requestFOV();
                 this.turnState = state.WAIT_FOV;
             break;
 
             case WAIT_FOV:
-                this.receiveFOV();
-                if (reply != null)
-                    this.turnState = state.MOVE;
+                if (this.agent.receiveFOV(mt)) {
+                    this.turnState = state.INFORM;
+                }
+                else { block(); }
             break;
 
-            case MOVE:
-                if (myAgent instanceof HiderAgent) {
-                    //TO DO: move hider
+            case INFORM:
+                if (this.agent instanceof SeekerAgent)
+                    ((SeekerAgent) this.agent).informSeekers();
+                this.turnState = state.LISTEN;
+            break;
+
+            case LISTEN:
+                if (this.agent instanceof SeekerAgent) {
+                    SeekerAgent seekerAgent = (SeekerAgent) agent; 
+                    if ( seekerAgent.receiveSeekerInfo() )
+                        numInfo++;
+                    if (numInfo >= seekerAgent.getSeekers().size())
+                        this.turnState = state.MOVE;
                 }
                 else {
-                    // addBehaviour(new ListenSeekersBehaviour());
-                    //TO DO: move seeker
+                    HiderAgent hiderAgent = (HiderAgent) agent; 
+                    if ( hiderAgent.receiveHiderInfo() )
+                        numInfo++;
+                    if (numInfo >= hiderAgent.getHiders().size())
+                        this.turnState = state.MOVE;
                 }
-                this.turnState = state.ASK_APPROVAL;
+            break;
+            
+            case MOVE:
+                this.turnState = state.END;
             break;
 
-            case ASK_APPROVAL:
-                //TO DO: ask master if valid move
-                this.turnState = state.WAIT_APPROVAL;
-            break;
-
-            case WAIT_APPROVAL:
-                //TO DO: receives approval
-                this.turnState = state.TURN_END;
-            break;
-
-            case TURN_END:
-                agent.addBehaviour(new WaitForTurnBehaviour(agent));
+            case END:
+                this.agent.addBehaviour(new WaitForTurnBehaviour());
                 this.done = true;
             break;
 
-        }
-    }
-
-
-    
-    public void requestFOV() {
-        //send Position and Orientation to Master
-        ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
-        request.addReceiver(agent.getMasterAID());
-
-        request.setContent("FOV_REQ;" + agent.getPos().getX() + ";" + agent.getPos().getY() + ";" + agent.getCurrOrientation());
-
-        request.setConversationId("req" + agent.getAID().getName());
-        request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
-        myAgent.send(request);
-        System.out.println("Agent" + agent.getAID().getName() + " sended: " + request.getContent());
-        // Prepare the template to get FOV
-        mt = MessageTemplate.and(MessageTemplate.MatchConversationId("req" + agent.getAID().getName()),
-                MessageTemplate.MatchInReplyTo(request.getReplyWith()));
-    }
-
-
-    public void receiveFOV() {
-        //receive FOV
-        reply = myAgent.receive(mt);
-        if (reply != null) {
-            String content = reply.getContent();
-            String[] splited = content.split(";");
-            
-            // Reply received
-            if (splited[0].equals("FOV")) {
-                System.out.println("Agent " + agent.getAID().getName() + " received:" + content);
-                
-
-                LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
-
-                for(int i = 1; i < splited.length; i++){
-                    String[] coordinates = splited[i].split(",");
-                    cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
-                }
-
-                agent.setCellsSeen(cells);
-            }
-        } else {
-            block();
         }
     }
 

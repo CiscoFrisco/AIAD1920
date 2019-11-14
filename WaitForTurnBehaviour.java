@@ -10,13 +10,10 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.util.LinkedHashSet;
 
 public class WaitForTurnBehaviour extends SimpleBehaviour {
-
     private ACLMessage signal;
-    private GameAgent agent;
 
-    public WaitForTurnBehaviour(GameAgent agent){
+    public WaitForTurnBehaviour(){
         super();
-        this.agent = agent;
     }
 
     public void action() {
@@ -27,7 +24,7 @@ public class WaitForTurnBehaviour extends SimpleBehaviour {
         if (signal != null) {
             // Signal received
             if(signal.getContent().equals("Your Turn")){
-                agent.addBehaviour(new PlayTurnBehaviour());
+                myAgent.addBehaviour(new PlayTurnBehaviour());
             }
         }
     }

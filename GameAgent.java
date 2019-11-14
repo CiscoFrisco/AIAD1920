@@ -72,12 +72,62 @@ public class GameAgent extends Agent {
         this.cellsSeen = cellsSeen;
     }
 
+    public void addCellSeen(Position cell) {
+        this.cellsSeen.add(cell);
+    }
+
     public AID getMasterAID() {
         return masterAID;
     }
 
     public void setMasterAID(AID masterAID) {
         this.masterAID = masterAID;
+    }
+
+    public MessageTemplate requestFOV() {
+        //send Position and Orientation to Master
+        ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
+        request.addReceiver(this.masterAID);
+
+        request.setContent("FOV_REQ;" + this.pos.getX() + ";" + this.pos.getY() + ";" + this.currOrientation);
+
+        request.setConversationId("FOV_REQ " + this.getAID().getName());
+        request.setReplyWith("FOV_REQ " + System.currentTimeMillis()); // Unique value
+        this.send(request);
+        System.out.println("Agent" + this.getAID().getName() + " sended: " + request.getContent());
+
+        // Prepare the template to get FOV
+        MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchConversationId("FOV_REQ " + this.getAID().getName()),
+                MessageTemplate.MatchInReplyTo(request.getReplyWith()));
+        return mt;
+    }
+
+    public boolean receiveFOV(MessageTemplate mt) {
+        ACLMessage reply = this.receive(mt);
+    
+        if (reply != null) {
+            String content = reply.getContent();
+            String[] splited = content.split(";");
+            
+            // Reply received
+            if (splited[0].equals("FOV")) {
+                System.out.println("Agent " + this.getAID().getName() + " received:" + content);
+                
+                LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
+                for(int i = 1; i < splited.length; i++){
+                    String[] coordinates = splited[i].split(",");
+                    cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+                }
+
+                this.setCellsSeen(cells);
+                return true;
+            }
+            else {
+                return false;
+            }
+        } 
+        
+        return false;
     }
 
 }

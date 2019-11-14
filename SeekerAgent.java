@@ -67,6 +67,10 @@ public class SeekerAgent extends GameAgent {
 
     }
 
+    public ArrayList<AID> getSeekers() {
+        return this.seekers;
+    }
+
     public class WarmupEndBehaviour extends SimpleBehaviour {
 
         private ACLMessage signal;
@@ -85,7 +89,7 @@ public class SeekerAgent extends GameAgent {
                 myAgent.send(reply);
                 System.out.println("Seeker " + getAID().getName() + " sended: " + reply.getContent());
 
-                addBehaviour(new WaitForTurnBehaviour((GameAgent) myAgent));
+                addBehaviour(new WaitForTurnBehaviour());
             }
         }
 
@@ -94,31 +98,49 @@ public class SeekerAgent extends GameAgent {
         }
     }
 
-    public class ListenSeekersBehaviour extends CyclicBehaviour {
+    public void informSeekers() {
+        ACLMessage info = new ACLMessage(ACLMessage.INFORM);
 
-        private int step = 0;
-        private MessageTemplate mt; // The template to receive replies
-        private ACLMessage request;
-
-        public void action() {
-
-            switch (step) {
-            case 0: // send "im listening"
-                mt = MessageTemplate.MatchPerformative(ACLMessage.REQUEST);
-                request = myAgent.receive(mt);
-                if (request != null) {
-
-                    // Request received
-                    String content = request.getContent();
-                }
-                break;
-            case 1:// "receive im listening"
-                step = 2;
-                break;
-            case 2:// send FOV
-                break;
-            }
+        for (int i = 0; i < this.seekers.size(); i++) {
+            info.addReceiver(this.seekers.get(i));
         }
+
+        String infoContent = "HIDERS;";
+        for (Position cell: this.getCellsSeen()) {
+            infoContent += cell.getX() + "," + cell.getY() + ";";
+        }
+        info.setContent(infoContent);
+        System.out.println(this.getAID().getName() + " sended: " + infoContent);
+
+        info.setConversationId("INFO " + this.getAID().getName());
+        info.setReplyWith("INFO " + System.currentTimeMillis()); // Unique value
+        this.send(info);
+    }
+
+    public boolean receiveSeekerInfo() {
+        MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+        ACLMessage info = this.receive(mt);
+                
+        if (info != null) {
+            // Request received
+            String infoContent = info.getContent();
+            String[] infoSplited = infoContent.split(";");
+                    
+            if (infoSplited[0].equals("HIDERS")) {
+                System.out.println(this.getAID().getName() + " received: " + infoContent);
+
+                for (int i = 1; i < infoSplited.length; i++) {
+                    String[] cellSplited = infoSplited[i].split(",");
+                    Position cell = new Position(Integer.parseInt(cellSplited[0]), Integer.parseInt(cellSplited[1]));
+                    this.addCellSeen(cell);
+                }
+                
+                return true;
+            }
+            return false;
+        }
+
+        return false;
     }
 
 }
