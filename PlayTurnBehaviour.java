@@ -50,6 +50,8 @@ public class PlayTurnBehaviour extends SimpleBehaviour {
             case INFORM:
                 if (this.agent instanceof SeekerAgent)
                     ((SeekerAgent) this.agent).informSeekers();
+                else 
+                    ((HiderAgent) this.agent).informHiders();
                 this.turnState = state.LISTEN;
             break;
 
