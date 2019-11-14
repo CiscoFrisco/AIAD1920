@@ -18,7 +18,6 @@ public class GameAgent extends Agent {
     boolean isGrabbing;
     double currOrientation;
     private LinkedHashSet<Position> cellsSeen;
-    private ArrayList<Position> opponentsKnown;
     private ArrayList<Position> moves;
 
     public void setup() {
@@ -28,30 +27,22 @@ public class GameAgent extends Agent {
         isGrabbing = false;
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
-        opponentsKnown = new ArrayList<Position>();
         moves = new ArrayList<Position>();
 
         initMasterAID();
     }
 
-    public ArrayList<Position> getOpponents() {
-        return opponentsKnown;
-    }
-
-    public void setOpponents(ArrayList<Position> opponents) {
-        this.opponentsKnown = opponents;
-    }
-
+    
     public void addOpponents(ArrayList<Position> opponents) {
         for (Position opponent : opponents)
-            this.opponentsKnown.add(opponent);
+            this.cellsSeen.add(opponent);
     }
 
     public void removeDuplicateOpponents() {
 
-        ArrayList<Position> newList = new ArrayList<Position>();
+        LinkedHashSet<Position> newList = new LinkedHashSet<Position>();
         // Traverse through the first list
-        for (Position pos : this.opponentsKnown) {
+        for (Position pos : this.cellsSeen) {
 
             if (!newList.contains(pos)) {
                 newList.add(pos);
@@ -59,7 +50,7 @@ public class GameAgent extends Agent {
         }
 
         // return the new list
-        setOpponents(newList);
+        this.cellsSeen = newList;
     }
 
     public void initMasterAID() {
@@ -253,13 +244,11 @@ public class GameAgent extends Agent {
                 opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
             }
 
-            ((SeekerAgent) myAgent).addOpponents(opponents);
-            ((SeekerAgent) myAgent).removeDuplicateOpponents();
+            ((GameAgent) myAgent).addOpponents(opponents);
+            // ((GameAgent) myAgent).removeDuplicateOpponents();
 
-            System.out.println(myAgent.getAID().getName());
-
-            for(Position opponent : opponentsKnown){
-                System.out.println(opponent.getX() + "|" + opponent.getY());
+            for(Position opponent : ((GameAgent)myAgent).getCellsSeen()){
+                System.out.println(opponent.getX() + "|" + opponent.getY() + "->" + myAgent.getAID().getName());
             }
         }
     }

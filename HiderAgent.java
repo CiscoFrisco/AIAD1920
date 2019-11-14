@@ -14,9 +14,11 @@ import java.util.Arrays;
 public class HiderAgent extends GameAgent {
 
     private ArrayList<AID> hiders;
+    private int num_replies;
 
     public void setup() {
         super.setup();
+        this.num_replies = 0;
         registerHider();
         getHidersAID();
         addBehaviour(new ListenRequestsBehaviour());
@@ -66,7 +68,6 @@ public class HiderAgent extends GameAgent {
 
     }
 
-
     public class ListenRequestsBehaviour extends CyclicBehaviour {
 
         private MessageTemplate mt; // The template to receive replies
@@ -79,8 +80,9 @@ public class HiderAgent extends GameAgent {
             mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
             request = myAgent.receive(mt);
             if (request != null) {
-                // Request received4
-                // System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
+
+                // System.out.println(myAgent.getAID().getName() + " received: " +
+                // request.getContent() + " from " + request.getSender().getName());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -93,8 +95,15 @@ public class HiderAgent extends GameAgent {
                     addBehaviour(new FOVReceiveBehaviour(content_splited));
                     break;
                 case "AM":
-                    addBehaviour(new AvailableMovesReceiveBehaviour(content_splited, ((HiderAgent) myAgent).getHiders()));
+                    addBehaviour(
+                            new AvailableMovesReceiveBehaviour(content_splited, ((HiderAgent) myAgent).getHiders()));
                     break;
+                case "OPPONENTS":
+                    addBehaviour(new PositionReceiveBehaviour(content_splited));
+                    ((HiderAgent) myAgent).setNum_replies(((HiderAgent) myAgent).getNum_replies() + 1);
+                    if (((HiderAgent) myAgent).getNum_replies() == ((HiderAgent) myAgent).getHiders().size()) {
+                        ((HiderAgent) myAgent).setNum_replies(0);
+                    }
                 default:
                     break;
                 }
@@ -110,6 +119,14 @@ public class HiderAgent extends GameAgent {
 
     public void setHiders(ArrayList<AID> hiders) {
         this.hiders = hiders;
+    }
+
+    public int getNum_replies() {
+        return num_replies;
+    }
+
+    public void setNum_replies(int num_replies) {
+        this.num_replies = num_replies;
     }
 
 }

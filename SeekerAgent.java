@@ -82,7 +82,7 @@ public class SeekerAgent extends GameAgent {
             mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
             request = myAgent.receive(mt);
             if (request != null) {
-                // Request received4
+                
                 // System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
 
                 String content = request.getContent();
@@ -109,7 +109,6 @@ public class SeekerAgent extends GameAgent {
                     ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
                     if(((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()){
                         ((SeekerAgent) myAgent).setNum_replies(0);
-
                     }
                 default:
                     break;
