@@ -11,13 +11,11 @@ public class HideNSeekWorld {
     char[][] world;
     ArrayList<Position> hiders;
     ArrayList<Position> seekers;
-    ArrayList<Block> blocks;
 
     public HideNSeekWorld(String world_name) {
 
         hiders = new ArrayList<Position>();
         seekers = new ArrayList<Position>();
-        blocks = new ArrayList<Block>();
 
         try{
 			BufferedReader reader = new BufferedReader(new FileReader(world_name));
@@ -49,9 +47,6 @@ public class HideNSeekWorld {
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world[i].length; j++) {
                 switch (world[i][j]) {
-                case 'B':
-                   blocks.add(new Block(j,i));
-                    break;
                 case 'H':
                     hiders.add(new Position(j,i));
                     break;
