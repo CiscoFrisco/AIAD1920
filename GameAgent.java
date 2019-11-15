@@ -387,4 +387,9 @@ public class GameAgent extends Agent {
         }
     }
 
+    public class EndAgentBehaviour extends OneShotBehaviour{
+        public void action(){
+            ((GameAgent)myAgent).doDelete();
+        }
+    }
 }

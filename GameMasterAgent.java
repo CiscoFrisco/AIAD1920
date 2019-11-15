@@ -133,7 +133,7 @@ public class GameMasterAgent extends Agent {
                     addBehaviour(new MoveHandleBehaviour(content_splited, request.getSender()));
                     break;
                 case "FINISHED":
-                    addBehaviour(new CheckFinishedBehaviour(content_splited, request.getSender()));
+                    addBehaviour(new CheckFinishedBehaviour(content_splited));
                     break;
                 case "READY":
                     if (((GameMasterAgent) myAgent).getCounter() > ((GameMasterAgent) myAgent).getWarmup())
@@ -151,23 +151,51 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public class CheckFinishedBehaviour extends OneShotBehaviour{
-        
-        private boolean finished;
-        private AID sender;
+    public class CheckFinishedBehaviour extends OneShotBehaviour {
 
-        public CheckFinishedBehaviour(String[] content, AID sender){
+        private boolean finished;
+
+        public CheckFinishedBehaviour(String[] content) {
             finished = Boolean.parseBoolean(content[1]);
-            this.sender = sender;
         }
 
-        public void action(){
-            if(!finished){
-                addBehaviour(); //send end of game to every seeker - sender
-            }
-            else{
+        public void action() {
+            if (finished) {
+                System.out.println("SEEKERS WON");
+                addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
+            } else {
                 ((GameMasterAgent) myAgent).setWaiting_move(false);
             }
+        }
+    }
+
+    public class SendEndGameBehaviour extends OneShotBehaviour {
+
+        public void action() {
+
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+
+            for (AID hider : hiders) {
+                request.addReceiver(hider);
+            }
+
+            for (AID seeker : seekers) {
+                request.addReceiver(seeker);
+            }
+
+            String content = "END;";
+            request.setContent(content);
+            request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
+
+            ((GameMasterAgent) myAgent).send(request);
+
+            addBehaviour(new EndMasterBehaviour());
+        }
+    }
+
+    public class EndMasterBehaviour extends OneShotBehaviour{
+        public void action(){
+            ((GameMasterAgent)myAgent).doDelete();
         }
     }
 
@@ -264,7 +292,7 @@ public class GameMasterAgent extends Agent {
             GameMasterAgent master = (GameMasterAgent) myAgent;
 
             master.setCounter(master.getCounter() + 1);
-            System.out.println(master.getCounter());
+            System.out.println(master.getCounter() + " out of " + master.rounds);
 
             if (master.getCounter() == master.warmup) {
                 addBehaviour(new SignalWarmupEndBehaviour());
@@ -276,9 +304,11 @@ public class GameMasterAgent extends Agent {
                 addBehaviour(new SignalTurnBehaviour(false));
             }
 
-            if (master.getCounter() > master.rounds) {
-                stop();
 
+            if (master.getCounter() > master.rounds) {
+                System.out.println("HIDERS WON");
+                addBehaviour(new SendEndGameBehaviour());
+                stop();
             }
         }
     }
@@ -520,9 +550,9 @@ public class GameMasterAgent extends Agent {
 
             String content = "FINISHED_REQ;";
             request.setContent(content);
-            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
 
-            ((GameAgent) myAgent).send(request);
+            ((GameMasterAgent) myAgent).send(request);
         }
     }
 

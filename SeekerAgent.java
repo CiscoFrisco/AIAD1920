@@ -124,6 +124,11 @@ public class SeekerAgent extends GameAgent {
                 case "FOV_F":
                     if (!((SeekerAgent) myAgent).isWarming())
                         addBehaviour(new CheckWinBehaviour(content_splited));
+                    break;
+                case "END":
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new EndAgentBehaviour());
+                    break;
                 default:
                     break;
                 }
@@ -133,12 +138,11 @@ public class SeekerAgent extends GameAgent {
         }
     }
 
-    public class CheckWinBehaviour extends OneShotBehaviour(){
+    public class CheckWinBehaviour extends OneShotBehaviour {
         private String[] content;
 
-        public FOVReceiveBehaviour(String[] content) {
+        public CheckWinBehaviour(String[] content) {
             super();
-            this.partnersAID = partnersAID;
             this.content = content;
         }
 
@@ -153,21 +157,21 @@ public class SeekerAgent extends GameAgent {
             ((GameAgent) myAgent).setCellsSeen(cells);
 
             double distance = ((GameAgent) myAgent).getClosestOpponentDistance();
-            addBehaviour(new SendCatchedHiderBehaviour(distance == 1)); //ganhei
+            addBehaviour(new SendCatchedHiderBehaviour(distance == 1)); // ganhei
         }
     }
 
-    public class SendCatchedHiderBehaviour extends OneShotBehaviour{
+    public class SendCatchedHiderBehaviour extends OneShotBehaviour {
 
         private boolean catched;
 
-        public SendCatchedHiderBehaviour(boolean catched){
+        public SendCatchedHiderBehaviour(boolean catched) {
             this.catched = catched;
         }
 
-        public void action(){
+        public void action() {
             ACLMessage request = new ACLMessage(ACLMessage.INFORM);
-            request.addReceiver(((GameAgent)myAgent).getMasterAID());
+            request.addReceiver(((GameAgent) myAgent).getMasterAID());
 
             String content = "FINISHED;" + catched + ";";
             request.setContent(content);
@@ -177,7 +181,7 @@ public class SeekerAgent extends GameAgent {
         }
     }
 
-    public class FinishedHandleBehaviour extends OneShotBehaviour(){
+    public class FinishedHandleBehaviour extends OneShotBehaviour {
 
         public void action() {
             // send Position and Orientation to Master
