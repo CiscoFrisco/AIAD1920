@@ -31,7 +31,7 @@ public class GameMasterAgent extends Agent {
         counter = 0;
         printWorld();
         System.out.println("\n");
-        rounds = 5;
+        rounds = 50;
         warmup = (int) Math.floor(0.4 * rounds);
 
         registerMaster();
@@ -161,6 +161,7 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
             if (finished) {
+                ((GameMasterAgent)myAgent).printWorld();
                 System.out.println("SEEKERS WON");
                 addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
             } else {
@@ -193,9 +194,9 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public class EndMasterBehaviour extends OneShotBehaviour{
-        public void action(){
-            ((GameMasterAgent)myAgent).doDelete();
+    public class EndMasterBehaviour extends OneShotBehaviour {
+        public void action() {
+            ((GameMasterAgent) myAgent).doDelete();
         }
     }
 
@@ -258,7 +259,6 @@ public class GameMasterAgent extends Agent {
                 ACLMessage inf = new ACLMessage(ACLMessage.INFORM);
                 inf.addReceiver(gameAgents.get(agentsProcessed));
                 inf.setContent("GO;");
-                System.out.println("SENT GO");
                 inf.setConversationId("go-turn");
                 myAgent.send(inf);
                 this.state = 1;
@@ -266,7 +266,6 @@ public class GameMasterAgent extends Agent {
             case 1:
                 if (!((GameMasterAgent) myAgent).isWaiting_move()) {
                     this.agentsProcessed++;
-                    System.out.println("PROCESSED:" + this.agentsProcessed + " out of " + this.gameAgents.size());
                     this.state = 0;
                     ((GameMasterAgent) myAgent).setWaiting_move(true);
                 }
@@ -292,7 +291,8 @@ public class GameMasterAgent extends Agent {
             GameMasterAgent master = (GameMasterAgent) myAgent;
 
             master.setCounter(master.getCounter() + 1);
-            System.out.println(master.getCounter() + " out of " + master.rounds);
+            System.out.println(master.getCounter() + " out of " + master.rounds + "\n");
+            master.printWorld();
 
             if (master.getCounter() == master.warmup) {
                 addBehaviour(new SignalWarmupEndBehaviour());
@@ -303,7 +303,6 @@ public class GameMasterAgent extends Agent {
             } else {
                 addBehaviour(new SignalTurnBehaviour(false));
             }
-
 
             if (master.getCounter() > master.rounds) {
                 System.out.println("HIDERS WON");
@@ -522,7 +521,6 @@ public class GameMasterAgent extends Agent {
             new_world[newPos.y][newPos.x] = agent;
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
-            ((GameMasterAgent) myAgent).printWorld();
 
             System.out.println("\n");
 

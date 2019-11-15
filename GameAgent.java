@@ -144,7 +144,6 @@ public class GameAgent extends Agent {
         return min_distance;
     }
 
-
     public Position getClosestMove(Position opponent) {
 
         Position move = null;
