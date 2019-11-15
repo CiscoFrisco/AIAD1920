@@ -161,7 +161,7 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
             if (finished) {
-                ((GameMasterAgent)myAgent).printWorld();
+                ((GameMasterAgent) myAgent).printWorld();
                 System.out.println("SEEKERS WON");
                 addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
             } else {
@@ -189,6 +189,8 @@ public class GameMasterAgent extends Agent {
             request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
 
             ((GameMasterAgent) myAgent).send(request);
+            // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+            // inf.getContent());
 
             addBehaviour(new EndMasterBehaviour());
         }
@@ -261,6 +263,8 @@ public class GameMasterAgent extends Agent {
                 inf.setContent("GO;");
                 inf.setConversationId("go-turn");
                 myAgent.send(inf);
+                // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+                // inf.getContent());
                 this.state = 1;
                 break;
             case 1:
@@ -341,7 +345,9 @@ public class GameMasterAgent extends Agent {
             inf.setConversationId("signal-turn");
             inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
             myAgent.send(inf);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+            // inf.getContent());
+
         }
     }
 
@@ -365,7 +371,8 @@ public class GameMasterAgent extends Agent {
                 inf.setConversationId("signal-warmup");
                 inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
                 myAgent.send(inf);
-                // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+                // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+                // inf.getContent());
                 // Prepare the template to get acknowledgements
                 mt = MessageTemplate.and(MessageTemplate.MatchConversationId("signal-warmup"),
                         MessageTemplate.MatchInReplyTo(inf.getReplyWith()));
@@ -441,8 +448,8 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-            // System.out.println(getAID().getName() + " sended:" + reply.getContent() + "
-            // to " + request.getSender().getName());
+            // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+            // inf.getContent());
         }
     }
 
@@ -488,9 +495,8 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-
-            // System.out.println("GameMaster " + getAID().getName() + " sended:" +
-            // reply.getContent());
+            // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+            // inf.getContent());
         }
     }
 
@@ -551,6 +557,8 @@ public class GameMasterAgent extends Agent {
             request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
 
             ((GameMasterAgent) myAgent).send(request);
+            // System.out.println("GameMaster " + getAID().getName() + " sended: " +
+            // inf.getContent());
         }
     }
 

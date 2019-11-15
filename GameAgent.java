@@ -299,6 +299,8 @@ public class GameAgent extends Agent {
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(move);
+             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
             
             //update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
@@ -359,6 +361,8 @@ public class GameAgent extends Agent {
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(move);
+             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
             
             //update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
@@ -383,6 +387,8 @@ public class GameAgent extends Agent {
             request.setContent("READY;");
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(request);
+             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
 

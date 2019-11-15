@@ -178,6 +178,8 @@ public class SeekerAgent extends GameAgent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
 
             ((GameAgent) myAgent).send(request);
+             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
 
@@ -212,7 +214,6 @@ public class SeekerAgent extends GameAgent {
             ArrayList<Position> moves = new ArrayList<>();
 
             for (int i = 1; i < content.length; i++) {
-                // System.out.println(content[i]);
                 String[] coordinates = content[i].split(",");
                 moves.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
             }

@@ -134,7 +134,6 @@ public class HiderAgent extends GameAgent {
             ArrayList<Position> moves = new ArrayList<>();
 
             for (int i = 1; i < content.length; i++) {
-                // System.out.println(content[i]);
                 String[] coordinates = content[i].split(",");
                 moves.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
             }
