@@ -82,8 +82,9 @@ public class SeekerAgent extends GameAgent {
             mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
             request = myAgent.receive(mt);
             if (request != null) {
-                
-                // System.out.println(myAgent.getAID().getName() + " received: " + request.getContent() + " from " + request.getSender().getName());
+
+                // System.out.println(myAgent.getAID().getName() + " received: " +
+                // request.getContent() + " from " + request.getSender().getName());
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -98,20 +99,62 @@ public class SeekerAgent extends GameAgent {
                     break;
                 case "FOV":
                     if (!((SeekerAgent) myAgent).isWarming())
-                        addBehaviour(new FOVReceiveBehaviour(content_splited));
+                        addBehaviour(new FOVReceiveBehaviour(content_splited, ((SeekerAgent) myAgent).getSeekers()));
                     break;
                 case "AM":
                     if (!((SeekerAgent) myAgent).isWarming())
-                        addBehaviour(new AvailableMovesReceiveBehaviour(content_splited, ((SeekerAgent) myAgent).getSeekers()));
+                        addBehaviour(new SeekerMovesReceiveBehaviour(content_splited));
                     break;
                 case "OPPONENTS":
-                    addBehaviour(new KnownHidersReceiveBehaviour(content_splited));
-                    
+                    addBehaviour(new KnownOpponentsReceiveBehaviour(content_splited));
+                    ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
+                    if (((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()) {
+                        addBehaviour(new SendReadyBehaviour());
+                        ((SeekerAgent) myAgent).setNum_replies(0);
+                    }
+                    break;
+                case "GO":
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new AvailableMovesRequestBehaviour());
+                    break;
                 default:
                     break;
                 }
             } else {
                 block();
+            }
+        }
+    }
+
+    public class SeekerMovesReceiveBehaviour extends OneShotBehaviour {
+
+        private String[] content;
+
+        public SeekerMovesReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+        }
+
+        public void action() {
+
+            ArrayList<Position> moves = new ArrayList<>();
+
+            for (int i = 1; i < content.length; i++) {
+                // System.out.println(content[i]);
+                String[] coordinates = content[i].split(",");
+                moves.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            moves.add(((GameAgent) myAgent).getPos());
+            ((GameAgent) myAgent).setMovesAvailable(moves);
+
+            Position hider = ((GameAgent) myAgent).getClosestOpponent();
+
+            if (hider != null) {
+                Position move = ((GameAgent) myAgent).getClosestMove(hider);
+                addBehaviour(new SendBestMoveBehaviour(move));
+            } else {
+                addBehaviour(new SendRandomMoveBehaviour());
             }
         }
     }
@@ -138,42 +181,5 @@ public class SeekerAgent extends GameAgent {
 
     public void setNum_replies(int num_replies) {
         this.num_replies = num_replies;
-    }
-
-    public class KnownHidersReceiveBehaviour extends OneShotBehaviour {
-
-        private String[] content;
-
-        public KnownHidersReceiveBehaviour(String[] content) {
-            super();
-            this.content = content;
-        }
-
-        public void action() {
-
-            ArrayList<Position> opponents = new ArrayList<>();
-
-            for (int i = 1; i < content.length; i++) {
-                String[] coordinates = content[i].split(",");
-                opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
-            }
-
-            ((SeekerAgent) myAgent).addOpponents(opponents);
-            ((SeekerAgent) myAgent).setNum_replies(((SeekerAgent) myAgent).getNum_replies() + 1);
-
-            if (((SeekerAgent) myAgent).getNum_replies() == ((SeekerAgent) myAgent).getSeekers().size()) {
-                ((SeekerAgent) myAgent).setNum_replies(0);
-                Position hider = ((SeekerAgent)myAgent).getClosestOpponent();
-                if(hider != null){
-                    System.out.println("CLOSEST_HIDER: " + hider.getX() + "|" + hider.getY());
-                }
-            }
-
-            // ((GameAgent) myAgent).removeDuplicateOpponents();
-
-            for (Position opponent : ((SeekerAgent) myAgent).getCellsSeen()) {
-                System.out.println(opponent.getX() + "|" + opponent.getY() + "->" + myAgent.getAID().getName());
-            }
-        }
     }
 }

@@ -38,7 +38,6 @@ public class HideNSeekWorld {
 			e.printStackTrace();
         }
         
-        printWorld();
         setupWorld();
     }
 
@@ -61,15 +60,6 @@ public class HideNSeekWorld {
                     break;
                 }
             }
-        }
-    }
-
-    public void printWorld() {
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world[i].length; j++) {
-                System.out.print(" | " + world[i][j]);
-            }
-            System.out.print(" |\n");
         }
     }
 

@@ -9,6 +9,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import java.util.LinkedHashSet;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameAgent extends Agent {
 
@@ -32,7 +33,6 @@ public class GameAgent extends Agent {
         initMasterAID();
     }
 
-    
     public void addOpponents(ArrayList<Position> opponents) {
         for (Position opponent : opponents)
             this.cellsSeen.add(opponent);
@@ -55,8 +55,8 @@ public class GameAgent extends Agent {
 
     public void initMasterAID() {
 
-        addBehaviour(new OneShotBehaviour() {
-            public void action() {
+        addBehaviour(new WakerBehaviour(this, 1000) {
+            public void onWake() {
                 // Update the list of seller agents
                 DFAgentDescription template = new DFAgentDescription();
                 ServiceDescription sd = new ServiceDescription();
@@ -112,14 +112,14 @@ public class GameAgent extends Agent {
         this.masterAID = masterAID;
     }
 
-    public Position getClosestOpponent(){
+    public Position getClosestOpponent() {
 
         double min_distance = 999;
         Position closest = null;
 
-        for(Position opponent : cellsSeen){
+        for (Position opponent : cellsSeen) {
             double distance = getDistance(opponent, pos);
-            if( distance <= min_distance){
+            if (distance <= min_distance) {
                 min_distance = distance;
                 closest = opponent;
             }
@@ -128,12 +128,43 @@ public class GameAgent extends Agent {
         return closest;
     }
 
-    public double getDistance(Position p1, Position p2){
-        double deltaX = p2.getX() - p1.getX();
-        double deltaY = p2.getY() - p1.getY();
-        return Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+    public Position getClosestMove(Position opponent) {
+
+        Position move = null;
+        double min_distance = 999;
+
+        for (Position pos : moves) {
+            double distance = getDistance(opponent, pos);
+            if (distance <= min_distance) {
+                move = pos;
+                min_distance = distance;
+            }
+        }
+
+        return move;
     }
 
+    public Position getFurthestMove(Position opponent) {
+
+        Position move = null;
+        double max_distance = 0;
+
+        for (Position pos : moves) {
+            double distance = getDistance(opponent, pos);
+            if (distance >= max_distance) {
+                move = pos;
+                max_distance = distance;
+            }
+        }
+
+        return move;
+    }
+
+    public double getDistance(Position p1, Position p2) {
+        double deltaX = p2.getX() - p1.getX();
+        double deltaY = p2.getY() - p1.getY();
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
 
     public class FOVRequestBehaviour extends OneShotBehaviour {
 
@@ -147,7 +178,8 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
 
@@ -164,16 +196,20 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
 
     public class FOVReceiveBehaviour extends OneShotBehaviour {
-        
-        private String[] content;
 
-        public FOVReceiveBehaviour(String[] content) {
+        private String[] content;
+        private ArrayList<AID> partnersAID;
+
+
+        public FOVReceiveBehaviour(String[] content, ArrayList<AID> partnersAID) {
             super();
+            this.partnersAID = partnersAID;
             this.content = content;
         }
 
@@ -186,31 +222,6 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).setCellsSeen(cells);
-            addBehaviour(new AvailableMovesRequestBehaviour());
-        }
-    }
-
-    public class AvailableMovesReceiveBehaviour extends OneShotBehaviour {
-
-        private String[] content;
-        private ArrayList<AID> partnersAID;
-
-        public AvailableMovesReceiveBehaviour(String[] content, ArrayList<AID> partnersAID) {
-            super();
-            this.content = content;
-            this.partnersAID = partnersAID;
-        }
-
-        public void action() {
-
-            ArrayList<Position> moves = new ArrayList<>();
-
-            for (int i = 1; i < content.length; i++) {
-                String[] coordinates = content[i].split(",");
-                moves.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
-            }
-
-            ((GameAgent) myAgent).setMovesAvailable(moves);
             addBehaviour(new PositionRequestBehaviour(this.partnersAID));
         }
     }
@@ -244,7 +255,119 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " + request.getContent());
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
+
+    public class SendBestMoveBehaviour extends OneShotBehaviour {
+
+        private Position newPos;
+
+        public SendBestMoveBehaviour(Position move) {
+            super();
+            this.newPos = move;
+        }
+
+        public void action() {
+            // send Position and Orientation to Master
+            ACLMessage move = new ACLMessage(ACLMessage.INFORM);
+            move.addReceiver(((GameAgent) myAgent).getMasterAID());
+
+            Position oldPos = ((GameAgent) myAgent).getPos();
+
+            String content = "MOVE;" + 
+                            oldPos.getX() + "," + oldPos.getY() + ";" + 
+                            newPos.getX() + "," + newPos.getY() + ";";
+
+            move.setContent(content);
+            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            ((GameAgent) myAgent).send(move);
+            
+            //update Agent Position and Orientation
+            ((GameAgent) myAgent).setPos(newPos);
+            
+            double currOri = ((GameAgent) myAgent).getCurrOrientation();
+
+            if(currOri == 360){
+                ((GameAgent) myAgent).setCurrOrientation(90);
+            }
+            else{
+                ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
+            }
+        }
+    }
+
+    public class KnownOpponentsReceiveBehaviour extends OneShotBehaviour {
+
+        private String[] content;
+
+        public KnownOpponentsReceiveBehaviour(String[] content) {
+            super();
+            this.content = content;
+        }
+
+        public void action() {
+
+            ArrayList<Position> opponents = new ArrayList<>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                opponents.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((GameAgent) myAgent).addOpponents(opponents);
+            //((GameAgent) myAgent).removeDuplicateOpponents();
+        }
+    }
+
+    public class SendRandomMoveBehaviour extends OneShotBehaviour {
+
+        public void action() {
+            
+            //calc random move
+            int random_limit = ((GameAgent)myAgent).getMovesAvailable().size();
+            int selectedRandom = ThreadLocalRandom.current().nextInt(0, random_limit);
+            
+            // send Position and Orientation to Master
+            ACLMessage move = new ACLMessage(ACLMessage.INFORM);
+            move.addReceiver(((GameAgent) myAgent).getMasterAID());
+
+            Position oldPos = ((GameAgent) myAgent).getPos();
+            Position newPos = ((GameAgent)myAgent).getMovesAvailable().get(selectedRandom);
+
+            String content = "MOVE;" + 
+                            oldPos.getX() + "," + oldPos.getY() + ";" + 
+                            newPos.getX() + "," + newPos.getY() + ";";
+
+            move.setContent(content);
+            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            ((GameAgent) myAgent).send(move);
+            
+            //update Agent Position and Orientation
+            ((GameAgent) myAgent).setPos(newPos);
+            
+            double currOri = ((GameAgent) myAgent).getCurrOrientation();
+
+            if(currOri == 360){
+                ((GameAgent) myAgent).setCurrOrientation(90);
+            }
+            else{
+                ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
+            }
+        }
+    }
+
+    public class SendReadyBehaviour extends OneShotBehaviour {
+
+        public void action() {
+            // send Position and Orientation to Master
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(((GameAgent) myAgent).getMasterAID());
+            request.setContent("READY;");
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            ((GameAgent) myAgent).send(request);
+        }
+    }
+
 }
