@@ -128,6 +128,23 @@ public class GameAgent extends Agent {
         return closest;
     }
 
+    public double getClosestOpponentDistance() {
+
+        double min_distance = 999;
+        Position closest = null;
+
+        for (Position opponent : cellsSeen) {
+            double distance = getDistance(opponent, pos);
+            if (distance <= min_distance) {
+                min_distance = distance;
+                closest = opponent;
+            }
+        }
+
+        return min_distance;
+    }
+
+
     public Position getClosestMove(Position opponent) {
 
         Position move = null;

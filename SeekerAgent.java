@@ -117,12 +117,80 @@ public class SeekerAgent extends GameAgent {
                     if (!((SeekerAgent) myAgent).isWarming())
                         addBehaviour(new AvailableMovesRequestBehaviour());
                     break;
+                case "FINISHED_REQ":
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new FinishedHandleBehaviour());
+                    break;
+                case "FOV_F":
+                    if (!((SeekerAgent) myAgent).isWarming())
+                        addBehaviour(new CheckWinBehaviour(content_splited));
                 default:
                     break;
                 }
             } else {
                 block();
             }
+        }
+    }
+
+    public class CheckWinBehaviour extends OneShotBehaviour(){
+        private String[] content;
+
+        public FOVReceiveBehaviour(String[] content) {
+            super();
+            this.partnersAID = partnersAID;
+            this.content = content;
+        }
+
+        public void action() {
+            LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
+
+            for (int i = 1; i < content.length; i++) {
+                String[] coordinates = content[i].split(",");
+                cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+            }
+
+            ((GameAgent) myAgent).setCellsSeen(cells);
+
+            double distance = ((GameAgent) myAgent).getClosestOpponentDistance();
+            addBehaviour(new SendCatchedHiderBehaviour(distance == 1)); //ganhei
+        }
+    }
+
+    public class SendCatchedHiderBehaviour extends OneShotBehaviour{
+
+        private boolean catched;
+
+        public SendCatchedHiderBehaviour(boolean catched){
+            this.catched = catched;
+        }
+
+        public void action(){
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(((GameAgent)myAgent).getMasterAID());
+
+            String content = "FINISHED;" + catched + ";";
+            request.setContent(content);
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+
+            ((GameAgent) myAgent).send(request);
+        }
+    }
+
+    public class FinishedHandleBehaviour extends OneShotBehaviour(){
+
+        public void action() {
+            // send Position and Orientation to Master
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(((GameAgent) myAgent).getMasterAID());
+            request.setContent("FOV_REQ_F;" + ((GameAgent) myAgent).getPos().getX() + ";"
+                    + ((GameAgent) myAgent).getPos().getY() + ";" + ((GameAgent) myAgent).getCurrOrientation());
+
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
+            ((GameAgent) myAgent).send(request);
+            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
+            // request.getContent());
         }
     }
 

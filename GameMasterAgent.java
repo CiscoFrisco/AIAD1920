@@ -121,20 +121,26 @@ public class GameMasterAgent extends Agent {
 
                 switch (header) {
                 case "FOV_REQ":
-                    addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited));
+                    addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited, false));
+                    break;
+                case "FOV_REQ_F":
+                    addBehaviour(new FOVRequestsBehaviour(request, mt, content_splited, true));
                     break;
                 case "AM_REQ":
                     addBehaviour(new AvailableMovesReplyBehaviour(request, mt, content_splited));
                     break;
                 case "MOVE":
-                    addBehaviour(new MoveHandleBehaviour(content_splited));
+                    addBehaviour(new MoveHandleBehaviour(content_splited, request.getSender()));
+                    break;
+                case "FINISHED":
+                    addBehaviour(new CheckFinishedBehaviour(content_splited, request.getSender()));
                     break;
                 case "READY":
-                if(((GameMasterAgent)myAgent).getCounter() > ((GameMasterAgent)myAgent).getWarmup())
-                    addBehaviour(new UpdateReadyAgentsBehaviour(false));
-                else{
-                    addBehaviour(new UpdateReadyAgentsBehaviour(true));
-                }
+                    if (((GameMasterAgent) myAgent).getCounter() > ((GameMasterAgent) myAgent).getWarmup())
+                        addBehaviour(new UpdateReadyAgentsBehaviour(false));
+                    else {
+                        addBehaviour(new UpdateReadyAgentsBehaviour(true));
+                    }
                     break;
                 default:
                     break;
@@ -145,11 +151,31 @@ public class GameMasterAgent extends Agent {
         }
     }
 
+    public class CheckFinishedBehaviour extends OneShotBehaviour{
+        
+        private boolean finished;
+        private AID sender;
+
+        public CheckFinishedBehaviour(String[] content, AID sender){
+            finished = Boolean.parseBoolean(content[1]);
+            this.sender = sender;
+        }
+
+        public void action(){
+            if(!finished){
+                addBehaviour(); //send end of game to every seeker - sender
+            }
+            else{
+                ((GameMasterAgent) myAgent).setWaiting_move(false);
+            }
+        }
+    }
+
     public class UpdateReadyAgentsBehaviour extends OneShotBehaviour {
 
         private boolean warming;
 
-        public UpdateReadyAgentsBehaviour(boolean warming){
+        public UpdateReadyAgentsBehaviour(boolean warming) {
             super();
             this.warming = warming;
         }
@@ -168,8 +194,7 @@ public class GameMasterAgent extends Agent {
                             ((GameMasterAgent) myAgent).getSeekers()));
                     ((GameMasterAgent) myAgent).resetReady();
                 }
-            }
-            else{
+            } else {
                 if (agents_ready == num_hiders) {
                     addBehaviour(new MoveByTurnBehaviour(((GameMasterAgent) myAgent).getHiders()));
                     ((GameMasterAgent) myAgent).resetReady();
@@ -349,12 +374,14 @@ public class GameMasterAgent extends Agent {
         private ACLMessage request;
         private FieldOfView fov;
         private String[] content;
+        private boolean finished;
 
-        public FOVRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content) {
+        public FOVRequestsBehaviour(ACLMessage request, MessageTemplate mt, String[] content, boolean finished) {
             super();
             this.content = content;
             this.request = request;
             this.mt = mt;
+            this.finished = finished;
         }
 
         public void action() {
@@ -366,7 +393,13 @@ public class GameMasterAgent extends Agent {
             ACLMessage reply = request.createReply();
             reply.setPerformative(ACLMessage.INFORM);
 
-            String reply_content = "FOV;";
+            String reply_content = "";
+
+            if (finished)
+                reply_content += "FOV_F;";
+            else
+                reply_content += "FOV;";
+
             int x = Integer.parseInt(content[1]);
             int y = Integer.parseInt(content[2]);
 
@@ -419,7 +452,7 @@ public class GameMasterAgent extends Agent {
             reply.setPerformative(ACLMessage.INFORM);
 
             String reply_content = "AM;";
-            
+
             for (Position move : available) {
                 reply_content += move.x + "," + move.y + ";";
             }
@@ -435,10 +468,12 @@ public class GameMasterAgent extends Agent {
     public class MoveHandleBehaviour extends OneShotBehaviour {
 
         private String[] content;
+        private AID seekerAID;
 
-        public MoveHandleBehaviour(String[] content) {
+        public MoveHandleBehaviour(String[] content, AID seekerAID) {
             super();
             this.content = content;
+            this.seekerAID = seekerAID;
         }
 
         public void action() {
@@ -458,8 +493,36 @@ public class GameMasterAgent extends Agent {
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
             ((GameMasterAgent) myAgent).printWorld();
-            ((GameMasterAgent) myAgent).setWaiting_move(false);
+
             System.out.println("\n");
+
+            if (agent == 'S') {
+                addBehaviour(new FinishedRequestBehaviour(seekerAID));
+            } else {
+                ((GameMasterAgent) myAgent).setWaiting_move(false);
+            }
+        }
+    }
+
+    public class FinishedRequestBehaviour extends OneShotBehaviour {
+
+        private AID target;
+
+        public FinishedRequestBehaviour(AID target) {
+            super();
+            this.target = target;
+        }
+
+        public void action() {
+
+            ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            request.addReceiver(target);
+
+            String content = "FINISHED_REQ;";
+            request.setContent(content);
+            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+
+            ((GameAgent) myAgent).send(request);
         }
     }
 
