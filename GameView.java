@@ -42,7 +42,7 @@ public class GameView extends JPanel {
             hiderImages.put(Direction.DOWN, ImageIO.read(new File("res/images/hider_down.png")));
 
             otherImages.put('+', ImageIO.read(new File("res/images/space.png")));
-            otherImages.put('W', ImageIO.read(new File("res/images/wall.png")));
+            otherImages.put('W', ImageIO.read(new File("res/images/wall_alt.png")));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
