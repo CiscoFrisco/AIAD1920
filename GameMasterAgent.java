@@ -22,14 +22,14 @@ public class GameMasterAgent extends Agent {
     private int warmup;
     private int counter;
 
-    private Main gui;
+    private GUI gui;
 
     public void setup() {
 
         Object[] args = getArguments();
         world = (char[][]) args[0];
 
-        gui = new Main(this);
+        gui = new GUI(this);
 
         waiting_move = true;
         agents_ready = 0;
