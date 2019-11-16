@@ -2,12 +2,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.EventQueue;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 public class GUI implements KeyListener {
 
     private JFrame gameFrame;
     private GameMasterAgent myAgent;
 	private GameView gameView;
+	private JLabel lblGameStatus;
 
     /**
      * Create the application.
@@ -40,8 +42,16 @@ public class GUI implements KeyListener {
         gameView.setBounds(18, 61, 329, 350);
         gameFrame.getContentPane().add(gameView);
         gameView.repaint();
+
+        lblGameStatus = new JLabel("Game Status");
+		lblGameStatus.setBounds(8, 406, 339, 31);
+		gameFrame.getContentPane().add(lblGameStatus);
 		
-	}
+    }
+    
+    public void updateStatus(String text){
+        lblGameStatus.setText(text);
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {

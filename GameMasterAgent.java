@@ -166,6 +166,7 @@ public class GameMasterAgent extends Agent {
         public void action() {
             if (finished) {
                 ((GameMasterAgent) myAgent).printWorld();
+                gui.updateStatus("SEEKERS WON");
                 System.out.println("SEEKERS WON");
                 addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
             } else {
@@ -312,6 +313,7 @@ public class GameMasterAgent extends Agent {
 
             if (master.getCounter() > master.rounds) {
                 System.out.println("HIDERS WON");
+                gui.updateStatus("HIDERS WON");
                 addBehaviour(new SendEndGameBehaviour());
                 stop();
             }
