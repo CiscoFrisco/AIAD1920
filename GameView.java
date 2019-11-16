@@ -92,7 +92,7 @@ public class GameView extends JPanel {
             break;
         }
 
-        return Direction.UP;
+        return Direction.RIGHT;
     }
 
     public void updatePos(int oldX, int oldY, int newX, int newY, double orientation, char agent){
@@ -110,10 +110,10 @@ public class GameView extends JPanel {
                     graphics[i][j] = otherImages.get(map[i][j]);
                     break;
                 case 'S':
-                    graphics[i][j] = seekerImages.get(Direction.UP);
+                    graphics[i][j] = seekerImages.get(Direction.RIGHT);
                     break;
                 case 'H':
-                    graphics[i][j] = hiderImages.get(Direction.UP);
+                    graphics[i][j] = hiderImages.get(Direction.RIGHT);
                     break;
                 default:
                     break;
