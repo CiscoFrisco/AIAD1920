@@ -18,15 +18,18 @@ public class GameView extends JPanel {
     private TreeMap<Direction, BufferedImage> seekerImages;
     private TreeMap<Direction, BufferedImage> hiderImages;
     private TreeMap<Character, BufferedImage> otherImages;
-    private char[][] map;
 
     public GameView(char[][] map) {
-        this.map = map;
         loadImages();
-        initGraphics();
+        graphics = new BufferedImage[height][width];
+        updateGraphics(map);
     }
 
     private void loadImages() {
+        seekerImages = new TreeMap<Direction, BufferedImage>();
+        hiderImages = new TreeMap<Direction, BufferedImage>();
+        otherImages = new TreeMap<Character, BufferedImage>();
+
         try {
             seekerImages.put(Direction.UP, ImageIO.read(new File("res/seeker_up.png")));
             seekerImages.put(Direction.LEFT, ImageIO.read(new File("res/seeker_left.png")));
@@ -39,7 +42,7 @@ public class GameView extends JPanel {
             hiderImages.put(Direction.DOWN, ImageIO.read(new File("res/hider_down.png")));
 
             otherImages.put('+', ImageIO.read(new File("res/space.png")));
-            otherImages.put('X', ImageIO.read(new File("res/wall.png")));
+            otherImages.put('W', ImageIO.read(new File("res/wall.png")));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -75,14 +78,16 @@ public class GameView extends JPanel {
         }
     }
 
-    private void initGraphics() {
-        graphics = new BufferedImage[height][width];
+    public void updateMap(char[][] world){
 
+    }
+
+    public void updateGraphics(char[][] map) {
         for (int i = 0; i < map.length; i++)
             for (int j = 0; j < map[i].length; j++) {
                 switch (map[i][j]) {
                 case '+':
-                case 'X':
+                case 'W':
                     graphics[i][j] = otherImages.get(map[i][j]);
                     break;
                 case 'S':

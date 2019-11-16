@@ -7,30 +7,24 @@ import javax.swing.JFrame;
 
 public class Main implements KeyListener {
 
-	private JFrame gameFrame;
-
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    Main window = new Main();
-                    window.gameFrame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+    private JFrame gameFrame;
+    private GameMasterAgent myAgent;
+	private GameView gameView;
 
     /**
      * Create the application.
      */
-    public Main() {
+    public Main(GameMasterAgent agent) {
+        this.myAgent = agent;
         initFrame();
+        gameFrame.setVisible(true);
     }
+
+    public void updateMap()
+	{
+        gameView.updateGraphics(myAgent.getWorld());
+		gameView.repaint();
+	}
 
     private void initFrame() {
 		gameFrame = new JFrame();
@@ -38,7 +32,11 @@ public class Main implements KeyListener {
 		gameFrame.setResizable(false);
 		gameFrame.setBounds(100, 100, 611, 477);
 		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gameFrame.getContentPane().setLayout(null);
+        gameFrame.getContentPane().setLayout(null);
+        gameView = new GameView(myAgent.getWorld());
+        gameView.setBounds(18, 61, 329, 350);
+        gameFrame.getContentPane().add(gameView);
+        gameView.repaint();
 		
 	}
 

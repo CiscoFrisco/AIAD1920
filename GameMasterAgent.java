@@ -22,10 +22,15 @@ public class GameMasterAgent extends Agent {
     private int warmup;
     private int counter;
 
+    private Main gui;
+
     public void setup() {
 
         Object[] args = getArguments();
         world = (char[][]) args[0];
+
+        gui = new Main(this);
+
         waiting_move = true;
         agents_ready = 0;
         counter = 0;
@@ -518,7 +523,7 @@ public class GameMasterAgent extends Agent {
             new_world[newPos.y][newPos.x] = agent;
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
-
+            gui.updateMap();
             System.out.println("\n");
 
             if (agent == 'S') {
