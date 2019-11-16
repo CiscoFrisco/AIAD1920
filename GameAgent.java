@@ -251,6 +251,7 @@ public class GameAgent extends Agent {
         public void action() {
             // send Position and Orientation to Master
             ACLMessage request = new ACLMessage(ACLMessage.INFORM);
+            String name = ((GameAgent) myAgent).getAID().getName();
 
             for (int i = 0; i < this.opponentAID.size(); ++i) {
                 request.addReceiver(this.opponentAID.get(i));
@@ -265,10 +266,12 @@ public class GameAgent extends Agent {
             }
 
             request.setContent(content);
-            request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            request.setConversationId("req" + name);
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
+
+            String file = name.contains("Seeker") ? "seekers" : "hiders";
+            Logger.writeLog(name + " sent: " + request.getContent(), file);
         }
     }
 
