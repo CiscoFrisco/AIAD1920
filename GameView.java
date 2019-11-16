@@ -31,18 +31,18 @@ public class GameView extends JPanel {
         otherImages = new TreeMap<Character, BufferedImage>();
 
         try {
-            seekerImages.put(Direction.UP, ImageIO.read(new File("res/seeker_up.png")));
-            seekerImages.put(Direction.LEFT, ImageIO.read(new File("res/seeker_left.png")));
-            seekerImages.put(Direction.RIGHT, ImageIO.read(new File("res/seeker_right.png")));
-            seekerImages.put(Direction.DOWN, ImageIO.read(new File("res/seeker_down.png")));
+            seekerImages.put(Direction.UP, ImageIO.read(new File("res/images/seeker_up.png")));
+            seekerImages.put(Direction.LEFT, ImageIO.read(new File("res/images/seeker_left.png")));
+            seekerImages.put(Direction.RIGHT, ImageIO.read(new File("res/images/seeker_right.png")));
+            seekerImages.put(Direction.DOWN, ImageIO.read(new File("res/images/seeker_down.png")));
 
-            hiderImages.put(Direction.UP, ImageIO.read(new File("res/hider_up.png")));
-            hiderImages.put(Direction.LEFT, ImageIO.read(new File("res/hider_left.png")));
-            hiderImages.put(Direction.RIGHT, ImageIO.read(new File("res/hider_right.png")));
-            hiderImages.put(Direction.DOWN, ImageIO.read(new File("res/hider_down.png")));
+            hiderImages.put(Direction.UP, ImageIO.read(new File("res/images/hider_up.png")));
+            hiderImages.put(Direction.LEFT, ImageIO.read(new File("res/images/hider_left.png")));
+            hiderImages.put(Direction.RIGHT, ImageIO.read(new File("res/images/hider_right.png")));
+            hiderImages.put(Direction.DOWN, ImageIO.read(new File("res/images/hider_down.png")));
 
-            otherImages.put('+', ImageIO.read(new File("res/space.png")));
-            otherImages.put('W', ImageIO.read(new File("res/wall.png")));
+            otherImages.put('+', ImageIO.read(new File("res/images/space.png")));
+            otherImages.put('W', ImageIO.read(new File("res/images/wall.png")));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
