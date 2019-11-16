@@ -291,14 +291,6 @@ public class GameAgent extends Agent {
 
             Position oldPos = ((GameAgent) myAgent).getPos();
 
-            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";";
-
-            move.setContent(content);
-            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
-            ((GameAgent) myAgent).send(move);
-            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
-
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
 
@@ -309,6 +301,15 @@ public class GameAgent extends Agent {
             } else {
                 ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
             }
+
+            double nextOri = ((GameAgent) myAgent).getCurrOrientation();
+            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
+                    + ";" + nextOri + ";";
+
+            move.setContent(content);
+            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            ((GameAgent) myAgent).send(move);
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
         }
     }
 
@@ -350,14 +351,6 @@ public class GameAgent extends Agent {
             Position oldPos = ((GameAgent) myAgent).getPos();
             Position newPos = ((GameAgent) myAgent).getMovesAvailable().get(selectedRandom);
 
-            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";";
-
-            move.setContent(content);
-            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
-            ((GameAgent) myAgent).send(move);
-            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
-
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
 
@@ -368,6 +361,15 @@ public class GameAgent extends Agent {
             } else {
                 ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
             }
+            double nextOri = ((GameAgent) myAgent).getCurrOrientation();
+
+            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
+                    + ";" + nextOri + ";";
+
+            move.setContent(content);
+            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
+            ((GameAgent) myAgent).send(move);
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
         }
     }
 

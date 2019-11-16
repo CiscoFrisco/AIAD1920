@@ -24,7 +24,12 @@ public class Main implements KeyListener {
 	{
         gameView.updateGraphics(myAgent.getWorld());
 		gameView.repaint();
-	}
+    }
+    
+    public void updatePos(int oldX, int oldY, int newX, int newY, double orientation, char agent){
+        gameView.updatePos(oldX, oldY, newX, newY, orientation, agent);
+        gameView.repaint();
+    }
 
     private void initFrame() {
 		gameFrame = new JFrame();

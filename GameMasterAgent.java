@@ -514,7 +514,7 @@ public class GameMasterAgent extends Agent {
 
             Position oldPos = new Position(Integer.parseInt(oldPos_s[0]), Integer.parseInt(oldPos_s[1]));
             Position newPos = new Position(Integer.parseInt(newPos_s[0]), Integer.parseInt(newPos_s[1]));
-
+            double orientation = Double.parseDouble(content[3]);
             char[][] new_world = ((GameMasterAgent) myAgent).getWorld();
 
             char agent = new_world[oldPos.y][oldPos.x];
@@ -523,7 +523,7 @@ public class GameMasterAgent extends Agent {
             new_world[newPos.y][newPos.x] = agent;
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
-            gui.updateMap();
+            gui.updatePos(oldPos.y, oldPos.x, newPos.y, newPos.x, orientation, agent);
             System.out.println("\n");
 
             if (agent == 'S') {

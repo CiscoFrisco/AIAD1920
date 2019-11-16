@@ -78,8 +78,27 @@ public class GameView extends JPanel {
         }
     }
 
-    public void updateMap(char[][] world){
+    private Direction intToDirection(int orientation){
+        switch(orientation){
+            case 0:
+            return Direction.RIGHT;
+            case 90:
+            return Direction.UP;
+            case 180:
+            return Direction.LEFT;
+            case 270:
+            return Direction.DOWN;
+            default:
+            break;
+        }
 
+        return Direction.UP;
+    }
+
+    public void updatePos(int oldX, int oldY, int newX, int newY, double orientation, char agent){
+        Direction dir = intToDirection((int)orientation);
+        graphics[oldX][oldY] = otherImages.get('+');
+        graphics[newX][newY] = agent == 'S' ? seekerImages.get(dir) : hiderImages.get(dir);
     }
 
     public void updateGraphics(char[][] map) {
