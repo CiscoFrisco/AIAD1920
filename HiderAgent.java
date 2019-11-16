@@ -81,8 +81,8 @@ public class HiderAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
 
-                // System.out.println(myAgent.getAID().getName() + " received: " +
-                // request.getContent() + " from " + request.getSender().getName());
+                Logger.writeLog(myAgent.getAID().getName() + " received: " + request.getContent() + " from "
+                        + request.getSender().getName(), "master");
 
                 String content = request.getContent();
                 content_splited = content.split(";");

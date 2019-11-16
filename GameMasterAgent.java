@@ -112,8 +112,7 @@ public class GameMasterAgent extends Agent {
             if (request != null) {
                 // Request received
 
-                // System.out.println(myAgent.getAID().getName() + " received: " +
-                // request.getContent());
+                Logger.writeLog(myAgent.getAID().getName() + " received: " + request.getContent(), "master");
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -189,7 +188,7 @@ public class GameMasterAgent extends Agent {
             request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
 
             ((GameMasterAgent) myAgent).send(request);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            Logger.writeLog(getAID().getName() + " sent: " + request.getContent(), "master");
 
             addBehaviour(new EndMasterBehaviour());
         }
@@ -262,7 +261,7 @@ public class GameMasterAgent extends Agent {
                 inf.setContent("GO;");
                 inf.setConversationId("go-turn");
                 myAgent.send(inf);
-                // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+                Logger.writeLog(getAID().getName() + " sent: " + inf.getContent(), "master");
                 this.state = 1;
                 break;
             case 1:
@@ -343,7 +342,7 @@ public class GameMasterAgent extends Agent {
             inf.setConversationId("signal-turn");
             inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
             myAgent.send(inf);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            Logger.writeLog(getAID().getName() + " sent: " + inf.getContent(), "master");
         }
     }
 
@@ -367,7 +366,7 @@ public class GameMasterAgent extends Agent {
                 inf.setConversationId("signal-warmup");
                 inf.setReplyWith("inf" + System.currentTimeMillis()); // Unique value
                 myAgent.send(inf);
-                // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+                Logger.writeLog(getAID().getName() + " sent: " + inf.getContent(), "master");
                 // Prepare the template to get acknowledgements
                 mt = MessageTemplate.and(MessageTemplate.MatchConversationId("signal-warmup"),
                         MessageTemplate.MatchInReplyTo(inf.getReplyWith()));
@@ -383,9 +382,8 @@ public class GameMasterAgent extends Agent {
                         num_replies++;
                         String content = reply.getContent();
                         String[] splited = content.split("\\s+");
-                        // System.out.println(
-                        // getAID().getName() + " received:" + reply.getContent() + " from " +
-                        // splited[1]);
+
+                        Logger.writeLog(getAID().getName() + " received:" + reply.getContent() + " from " + splited[1], "master");
                     }
                 } else {
                     block();
@@ -443,7 +441,7 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            Logger.writeLog(getAID().getName() + " sent: " + reply.getContent(), "master");
         }
     }
 
@@ -489,7 +487,7 @@ public class GameMasterAgent extends Agent {
 
             reply.setContent(reply_content);
             ((GameMasterAgent) myAgent).send(reply);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            Logger.writeLog(getAID().getName() + " sent: " + reply.getContent(), "master");
         }
     }
 
@@ -550,7 +548,7 @@ public class GameMasterAgent extends Agent {
             request.setConversationId("req" + ((GameMasterAgent) myAgent).getAID().getName());
 
             ((GameMasterAgent) myAgent).send(request);
-            // System.out.println(getAID().getName() + " sended: " + inf.getContent());
+            Logger.writeLog(getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 

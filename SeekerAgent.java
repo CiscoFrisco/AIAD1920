@@ -83,8 +83,8 @@ public class SeekerAgent extends GameAgent {
             request = myAgent.receive(mt);
             if (request != null) {
 
-                // System.out.println(myAgent.getAID().getName() + " received: " +
-                // request.getContent() + " from " + request.getSender().getName());
+                Logger.writeLog(myAgent.getAID().getName() + " received: " + request.getContent() + " from "
+                        + request.getSender().getName(), "master");
 
                 String content = request.getContent();
                 content_splited = content.split(";");
@@ -178,8 +178,7 @@ public class SeekerAgent extends GameAgent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
 
             ((GameAgent) myAgent).send(request);
-             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 
@@ -195,8 +194,7 @@ public class SeekerAgent extends GameAgent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 

@@ -194,8 +194,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 
@@ -212,8 +211,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 
@@ -221,7 +219,6 @@ public class GameAgent extends Agent {
 
         private String[] content;
         private ArrayList<AID> partnersAID;
-
 
         public FOVReceiveBehaviour(String[] content, ArrayList<AID> partnersAID) {
             super();
@@ -271,8 +268,7 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             request.setReplyWith("req" + System.currentTimeMillis()); // Unique value
             ((GameAgent) myAgent).send(request);
-            // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 
@@ -292,25 +288,22 @@ public class GameAgent extends Agent {
 
             Position oldPos = ((GameAgent) myAgent).getPos();
 
-            String content = "MOVE;" + 
-                            oldPos.getX() + "," + oldPos.getY() + ";" + 
-                            newPos.getX() + "," + newPos.getY() + ";";
+            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
+                    + ";";
 
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(move);
-             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
-            
-            //update Agent Position and Orientation
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
+
+            // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
-            
+
             double currOri = ((GameAgent) myAgent).getCurrOrientation();
 
-            if(currOri == 360){
+            if (currOri == 360) {
                 ((GameAgent) myAgent).setCurrOrientation(90);
-            }
-            else{
+            } else {
                 ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
             }
         }
@@ -335,44 +328,41 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).addOpponents(opponents);
-            //((GameAgent) myAgent).removeDuplicateOpponents();
+            // ((GameAgent) myAgent).removeDuplicateOpponents();
         }
     }
 
     public class SendRandomMoveBehaviour extends OneShotBehaviour {
 
         public void action() {
-            
-            //calc random move
-            int random_limit = ((GameAgent)myAgent).getMovesAvailable().size();
+
+            // calc random move
+            int random_limit = ((GameAgent) myAgent).getMovesAvailable().size();
             int selectedRandom = ThreadLocalRandom.current().nextInt(0, random_limit);
-            
+
             // send Position and Orientation to Master
             ACLMessage move = new ACLMessage(ACLMessage.INFORM);
             move.addReceiver(((GameAgent) myAgent).getMasterAID());
 
             Position oldPos = ((GameAgent) myAgent).getPos();
-            Position newPos = ((GameAgent)myAgent).getMovesAvailable().get(selectedRandom);
+            Position newPos = ((GameAgent) myAgent).getMovesAvailable().get(selectedRandom);
 
-            String content = "MOVE;" + 
-                            oldPos.getX() + "," + oldPos.getY() + ";" + 
-                            newPos.getX() + "," + newPos.getY() + ";";
+            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
+                    + ";";
 
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(move);
-             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
-            
-            //update Agent Position and Orientation
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
+
+            // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
-            
+
             double currOri = ((GameAgent) myAgent).getCurrOrientation();
 
-            if(currOri == 360){
+            if (currOri == 360) {
                 ((GameAgent) myAgent).setCurrOrientation(90);
-            }
-            else{
+            } else {
                 ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
             }
         }
@@ -387,14 +377,13 @@ public class GameAgent extends Agent {
             request.setContent("READY;");
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(request);
-             // System.out.println(((GameAgent) myAgent).getAID().getName() + " sended: " +
-            // request.getContent());
+            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
         }
     }
 
-    public class EndAgentBehaviour extends OneShotBehaviour{
-        public void action(){
-            ((GameAgent)myAgent).doDelete();
+    public class EndAgentBehaviour extends OneShotBehaviour {
+        public void action() {
+            ((GameAgent) myAgent).doDelete();
         }
     }
 }

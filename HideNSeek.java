@@ -14,6 +14,7 @@ public class HideNSeek {
     public static void main(String[] args) throws StaleProxyException, InterruptedException {
 
         HideNSeekWorld world = new HideNSeekWorld(args[0]);
+        Logger.init();
 
         createContainers();
 
