@@ -14,7 +14,7 @@ public class GameView extends JPanel {
     private BufferedImage[][] graphics;
     private static int width = 10;
     private static int height = 10;
-    private static int imageSize = 32;
+    private static int imageSize = 42;
     private TreeMap<Direction, BufferedImage> seekerImages;
     private TreeMap<Direction, BufferedImage> hiderImages;
     private TreeMap<Character, BufferedImage> otherImages;
