@@ -14,13 +14,11 @@ import java.util.Arrays;
 public class SeekerAgent extends GameAgent {
 
     private ArrayList<AID> seekers;
-    private boolean warming;
     private int num_replies;
 
     public void setup() {
         super.setup();
         this.num_replies = 0;
-        this.warming = true;
         registerSeeker();
         getSeekersAID();
         addBehaviour(new ListenRequestsBehaviour());
@@ -95,18 +93,18 @@ public class SeekerAgent extends GameAgent {
                 header = content_splited[0];
                 switch (header) {
                 case "WARM_END":
-                    ((SeekerAgent) myAgent).setWarming(false);
+                    ((GameAgent) myAgent).setWarming(false);
                     break;
                 case "PLAY":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new FOVRequestBehaviour());
                     break;
                 case "FOV":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new FOVReceiveBehaviour(content_splited, ((SeekerAgent) myAgent).getSeekers()));
                     break;
                 case "AM":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new SeekerMovesReceiveBehaviour(content_splited));
                     break;
                 case "OPPONENTS":
@@ -118,19 +116,19 @@ public class SeekerAgent extends GameAgent {
                     }
                     break;
                 case "GO":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new AvailableMovesRequestBehaviour());
                     break;
                 case "FINISHED_REQ":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new FinishedHandleBehaviour());
                     break;
                 case "FOV_F":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new CheckWinBehaviour(content_splited));
                     break;
                 case "END":
-                    if (!((SeekerAgent) myAgent).isWarming())
+                    if (!((GameAgent) myAgent).isWarming())
                         addBehaviour(new EndAgentBehaviour());
                     break;
                 default:
@@ -240,14 +238,6 @@ public class SeekerAgent extends GameAgent {
                 addBehaviour(new SendRandomMoveBehaviour());
             }
         }
-    }
-
-    public boolean isWarming() {
-        return warming;
-    }
-
-    public void setWarming(boolean warming) {
-        this.warming = warming;
     }
 
     public ArrayList<AID> getSeekers() {

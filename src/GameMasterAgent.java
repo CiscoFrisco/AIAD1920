@@ -359,16 +359,19 @@ public class GameMasterAgent extends Agent {
         private int step = 0;
         private MessageTemplate mt; // The template to receive replies
         private int num_replies;
-        private int num_seekers;
+        private int num_players;
 
         public void action() {
             switch (step) {
             case 0:
-                num_seekers = seekers.size();
-                // Send the cfp to all sellers
+                num_players = seekers.size() + hiders.size();
+                // Send the signal to all players
                 ACLMessage inf = new ACLMessage(ACLMessage.INFORM);
-                for (int i = 0; i < seekers.size(); ++i) {
+                for (int i = 0; i < seekers.size(); i++) {
                     inf.addReceiver(seekers.get(i));
+                }
+                for (int i = 0; i < hiders.size(); i++) {
+                    inf.addReceiver(hiders.get(i));
                 }
                 inf.setContent("WARM_END");
                 inf.setConversationId("signal-warmup");
@@ -401,7 +404,7 @@ public class GameMasterAgent extends Agent {
         }
 
         public boolean done() {
-            return (step == 1 && num_seekers == num_replies);
+            return (step == 1 && num_players == num_replies);
         }
     }
 

@@ -92,6 +92,9 @@ public class HiderAgent extends GameAgent {
                 content_splited = content.split(";");
                 header = content_splited[0];
                 switch (header) {
+                case "WARM_END":
+                    ((GameAgent) myAgent).setWarming(false);
+                    break;
                 case "PLAY":
                     addBehaviour(new FOVRequestBehaviour());
                     break;

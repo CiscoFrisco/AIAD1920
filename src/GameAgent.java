@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class GameAgent extends Agent {
 
     private AID masterAID;
+    private boolean warming;
 
     Position pos;
     boolean isGrabbing;
@@ -29,8 +30,17 @@ public class GameAgent extends Agent {
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
         moves = new ArrayList<Position>();
+        this.warming = true;
 
         initMasterAID();
+    }
+
+    public boolean isWarming() {
+        return warming;
+    }
+
+    public void setWarming(boolean warming) {
+        this.warming = warming;
     }
 
     public void addOpponents(ArrayList<Position> opponents) {
@@ -289,13 +299,22 @@ public class GameAgent extends Agent {
 
         public void action() {
             LinkedHashSet<Position> cells = new LinkedHashSet<Position>();
+            ArrayList<Position> cellsArray = new ArrayList<Position>();
 
             for (int i = 1; i < content.length; i++) {
                 String[] coordinates = content[i].split(",");
                 cells.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
+                cellsArray.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
             }
 
-            ((GameAgent) myAgent).setCellsSeen(cells);
+            if ( !((GameAgent) myAgent).isWarming() ) {
+                ((GameAgent) myAgent).setCellsSeen(cells);
+            }
+            else {
+                ((GameAgent) myAgent).addOpponents(cellsArray);
+            }
+            
+
             if (this.partnersAID.size() > 0) {
                 addBehaviour(new PositionRequestBehaviour(this.partnersAID));
             }
