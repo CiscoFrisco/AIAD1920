@@ -104,8 +104,8 @@ public class GameAgent extends Agent {
             guiOrientation = 0;
         }
 
-        System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
-        System.out.println("--> gui orientation: " + guiOrientation);
+        //System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
+        //System.out.println("--> gui orientation: " + guiOrientation);
         return guiOrientation;
     }
 
@@ -229,10 +229,10 @@ public class GameAgent extends Agent {
             orientation = 2*Math.PI - angle;
         }
 
-        System.out.println("--> agent: " + this.getAID().getName());
-        System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
-        System.out.println("--> destiny: " + destiny.getX() + " , " + destiny.getY());
-        System.out.println("--> oritentation: " + Math.toDegrees(orientation));
+        //System.out.println("--> agent: " + this.getAID().getName());
+        //System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
+        //System.out.println("--> destiny: " + destiny.getX() + " , " + destiny.getY());
+        //System.out.println("--> oritentation: " + Math.toDegrees(orientation));
 
         return orientation;
     }
@@ -296,7 +296,13 @@ public class GameAgent extends Agent {
             }
 
             ((GameAgent) myAgent).setCellsSeen(cells);
-            addBehaviour(new PositionRequestBehaviour(this.partnersAID));
+            if (this.partnersAID.size() > 0) {
+                addBehaviour(new PositionRequestBehaviour(this.partnersAID));
+            }
+            else {
+                addBehaviour(new SendReadyBehaviour());
+            }
+            
         }
     }
 
@@ -358,17 +364,6 @@ public class GameAgent extends Agent {
             ((GameAgent) myAgent).setPos(newPos);
             ((GameAgent) myAgent).setCurrOrientation(orientation);
 
-            /*
-            double currOri = ((GameAgent) myAgent).getCurrOrientation();
-
-            if (currOri == 2*Math.PI) {
-                ((GameAgent) myAgent).setCurrOrientation(Math.PI/2);
-            } else {
-                ((GameAgent) myAgent).setCurrOrientation(currOri + Math.PI/2);
-            }
-
-            double nextOri = Math.toDegrees( ((GameAgent) myAgent).getCurrOrientation() );
-            */
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
 
@@ -420,17 +415,10 @@ public class GameAgent extends Agent {
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
 
-            double currOri = ((GameAgent) myAgent).getCurrOrientation();
-
-            if (currOri == 2*Math.PI) {
-                ((GameAgent) myAgent).setCurrOrientation(Math.PI/2);
-            } else {
-                ((GameAgent) myAgent).setCurrOrientation(currOri + Math.PI/2);
-            }
-            double nextOri =  Math.toDegrees( ((GameAgent) myAgent).getCurrOrientation() );
-
+            double nextOrientation = ((GameAgent) myAgent).getNextRandomOrientation();
+            ((GameAgent) myAgent).setCurrOrientation(nextOrientation);
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";" + nextOri + ";";
+                    + ";" + Math.toDegrees(nextOrientation) + ";";
 
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());

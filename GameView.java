@@ -65,21 +65,6 @@ public class GameView extends JPanel {
         }
     }
 
-    /*
-    public void updatePos(int i, int j, char entity, Direction direction) {
-        switch (entity) {
-        case 'H':
-            graphics[i][j] = hiderImages.get(direction);
-            break;
-        case 'S':
-            graphics[i][j] = seekerImages.get(direction);
-            break;
-        default:
-            break;
-        }
-    }
-    */
-
     private Direction intToDirection(int orientation){
         switch(orientation){
             case 0:
