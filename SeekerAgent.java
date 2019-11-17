@@ -227,7 +227,15 @@ public class SeekerAgent extends GameAgent {
 
             if (hider != null) {
                 Position move = ((GameAgent) myAgent).getClosestMove(hider);
-                addBehaviour(new SendBestMoveBehaviour(move));
+                Position pos = ((GameAgent) myAgent).getPos();
+                double orientation;
+                if (!move.equals(hider)) {
+                    orientation = ((GameAgent) myAgent).getOrientationTo(move, hider);
+                }
+                else {
+                    orientation = ((GameAgent) myAgent).getOrientationTo(pos, hider);
+                }
+                addBehaviour(new SendBestMoveBehaviour(move, orientation));
             } else {
                 addBehaviour(new SendRandomMoveBehaviour());
             }
