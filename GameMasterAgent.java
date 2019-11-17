@@ -525,7 +525,7 @@ public class GameMasterAgent extends Agent {
             new_world[newPos.y][newPos.x] = agent;
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
-            gui.updatePos(oldPos.y, oldPos.x, newPos.y, newPos.x, orientation, agent);
+            gui.updatePos(oldPos.x, oldPos.y, newPos.x, newPos.y, orientation, agent);
             System.out.println("\n");
 
             if (agent == 'S') {

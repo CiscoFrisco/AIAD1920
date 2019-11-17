@@ -65,6 +65,7 @@ public class GameView extends JPanel {
         }
     }
 
+    /*
     public void updatePos(int i, int j, char entity, Direction direction) {
         switch (entity) {
         case 'H':
@@ -77,6 +78,7 @@ public class GameView extends JPanel {
             break;
         }
     }
+    */
 
     private Direction intToDirection(int orientation){
         switch(orientation){
@@ -97,8 +99,8 @@ public class GameView extends JPanel {
 
     public void updatePos(int oldX, int oldY, int newX, int newY, double orientation, char agent){
         Direction dir = intToDirection((int)orientation);
-        graphics[oldX][oldY] = otherImages.get('+');
-        graphics[newX][newY] = agent == 'S' ? seekerImages.get(dir) : hiderImages.get(dir);
+        graphics[oldY][oldX] = otherImages.get('+');
+        graphics[newY][newX] = agent == 'S' ? seekerImages.get(dir) : hiderImages.get(dir);
     }
 
     public void updateGraphics(char[][] map) {

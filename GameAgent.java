@@ -296,13 +296,13 @@ public class GameAgent extends Agent {
 
             double currOri = ((GameAgent) myAgent).getCurrOrientation();
 
-            if (currOri == 360) {
-                ((GameAgent) myAgent).setCurrOrientation(90);
+            if (currOri == 2*Math.PI) {
+                ((GameAgent) myAgent).setCurrOrientation(Math.PI/2);
             } else {
-                ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
+                ((GameAgent) myAgent).setCurrOrientation(currOri + Math.PI/2);
             }
 
-            double nextOri = ((GameAgent) myAgent).getCurrOrientation();
+            double nextOri = Math.toDegrees( ((GameAgent) myAgent).getCurrOrientation() );
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + nextOri + ";";
 
@@ -356,12 +356,12 @@ public class GameAgent extends Agent {
 
             double currOri = ((GameAgent) myAgent).getCurrOrientation();
 
-            if (currOri == 360) {
-                ((GameAgent) myAgent).setCurrOrientation(90);
+            if (currOri == 2*Math.PI) {
+                ((GameAgent) myAgent).setCurrOrientation(Math.PI/2);
             } else {
-                ((GameAgent) myAgent).setCurrOrientation(currOri + 90);
+                ((GameAgent) myAgent).setCurrOrientation(currOri + Math.PI/2);
             }
-            double nextOri = ((GameAgent) myAgent).getCurrOrientation();
+            double nextOri =  Math.toDegrees( ((GameAgent) myAgent).getCurrOrientation() );
 
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + nextOri + ";";
