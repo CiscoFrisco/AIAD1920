@@ -444,7 +444,7 @@ public class GameAgent extends Agent {
            
             ((GameAgent) myAgent).setCurrOrientation(nextOrientation);
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";" + Math.toDegrees(nextOrientation) + ";";
+                    + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
 
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
