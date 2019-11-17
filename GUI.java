@@ -10,6 +10,7 @@ public class GUI implements KeyListener {
     private GameMasterAgent myAgent;
 	private GameView gameView;
 	private JLabel lblGameStatus;
+	private JLabel lblRounds;
 
     /**
      * Create the application.
@@ -35,7 +36,7 @@ public class GUI implements KeyListener {
 		gameFrame = new JFrame();
 		gameFrame.setTitle("Hide and Seek");
 		gameFrame.setResizable(false);
-		gameFrame.setBounds(100, 100, 611, 477);
+		gameFrame.setBounds(100, 100, 400, 500);
 		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameFrame.getContentPane().setLayout(null);
         gameView = new GameView(myAgent.getWorld());
@@ -45,12 +46,20 @@ public class GUI implements KeyListener {
 
         lblGameStatus = new JLabel("Game Status");
 		lblGameStatus.setBounds(8, 406, 339, 31);
-		gameFrame.getContentPane().add(lblGameStatus);
+        gameFrame.getContentPane().add(lblGameStatus);
+        
+        lblRounds = new JLabel("Rounds");
+		lblRounds.setBounds(200, 406, 339, 31);
+		gameFrame.getContentPane().add(lblRounds);
 		
     }
     
     public void updateStatus(String text){
         lblGameStatus.setText(text);
+    }
+
+    public void updateRounds(int currentRound, int totalRounds){
+        lblRounds.setText("Round " + currentRound + "/" + totalRounds);
     }
 
     @Override

@@ -298,6 +298,7 @@ public class GameMasterAgent extends Agent {
             GameMasterAgent master = (GameMasterAgent) myAgent;
 
             master.setCounter(master.getCounter() + 1);
+            gui.updateRounds(master.getCounter(), rounds);
             System.out.println(master.getCounter() + " out of " + master.rounds + "\n");
             master.printWorld();
 
