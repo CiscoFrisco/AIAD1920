@@ -88,6 +88,37 @@ public class GameAgent extends Agent {
         this.currOrientation = currOrientation;
     }
 
+    public double getGuiOrientation() {
+        double guiOrientation;
+
+        if (currOrientation > Math.toRadians(45)  && currOrientation < Math.toRadians(135)) {
+            guiOrientation = 90;
+        }
+        else if (currOrientation >= Math.toRadians(135) && currOrientation <= Math.toRadians(225)) {
+            guiOrientation = 180;
+        }
+        else if (currOrientation > Math.toRadians(225) &&  currOrientation < Math.toRadians(315)) {
+            guiOrientation = 270;
+        }
+        else {
+            guiOrientation = 0;
+        }
+
+        System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
+        System.out.println("--> gui orientation: " + guiOrientation);
+        return guiOrientation;
+    }
+
+    public double getNextRandomOrientation() {
+        double randomOri;
+
+        randomOri = this.getGuiOrientation();
+        randomOri += 90;
+        if (randomOri == 360)
+            randomOri = 0;
+        return Math.toRadians(randomOri);
+    }
+
     public LinkedHashSet<Position> getCellsSeen() {
         return cellsSeen;
     }
@@ -174,6 +205,36 @@ public class GameAgent extends Agent {
         }
 
         return move;
+    }
+
+    public double getOrientationTo(Position origin, Position destiny) {
+        double deltaX = destiny.getX() - origin.getX();
+        double deltaY = destiny.getY() - origin.getY();
+        
+        double h = this.getDistance(origin, destiny);
+        double co = Math.abs(deltaY);
+        double angle = Math.asin(co/h);
+    
+        double orientation;
+        if (deltaX >= 0 && deltaY < 0) {
+            orientation = angle;
+        }
+        else if (deltaX < 0 && deltaY <= 0) {
+            orientation = Math.PI - angle;
+        }
+        else if (deltaX <= 0 && deltaY > 0) {
+            orientation = Math.PI + angle;
+        }
+        else {
+            orientation = 2*Math.PI - angle;
+        }
+
+        System.out.println("--> agent: " + this.getAID().getName());
+        System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
+        System.out.println("--> destiny: " + destiny.getX() + " , " + destiny.getY());
+        System.out.println("--> oritentation: " + Math.toDegrees(orientation));
+
+        return orientation;
     }
 
     public double getDistance(Position p1, Position p2) {
@@ -278,10 +339,12 @@ public class GameAgent extends Agent {
     public class SendBestMoveBehaviour extends OneShotBehaviour {
 
         private Position newPos;
+        private double orientation;
 
-        public SendBestMoveBehaviour(Position move) {
+        public SendBestMoveBehaviour(Position move, double orientation) {
             super();
             this.newPos = move;
+            this.orientation = orientation;
         }
 
         public void action() {
@@ -293,7 +356,9 @@ public class GameAgent extends Agent {
 
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
+            ((GameAgent) myAgent).setCurrOrientation(orientation);
 
+            /*
             double currOri = ((GameAgent) myAgent).getCurrOrientation();
 
             if (currOri == 2*Math.PI) {
@@ -303,8 +368,9 @@ public class GameAgent extends Agent {
             }
 
             double nextOri = Math.toDegrees( ((GameAgent) myAgent).getCurrOrientation() );
+            */
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";" + nextOri + ";";
+                    + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
 
             move.setContent(content);
             move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
