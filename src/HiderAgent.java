@@ -152,7 +152,13 @@ public class HiderAgent extends GameAgent {
 
             if (seeker != null) {
                 Position move = ((GameAgent) myAgent).getFurthestMove(seeker);
-                double orientation = ((GameAgent) myAgent).getNextRandomOrientation();
+                double orientation;
+                if (!move.equals(pos)) {
+                    orientation = ((GameAgent) myAgent).getOrientationTo(pos, move);
+                }
+                else {
+                    orientation = ((GameAgent) myAgent).getNextRandomOrientation();
+                }
                 addBehaviour(new SendBestMoveBehaviour(move, orientation));
             } else {
                 addBehaviour(new SendRandomMoveBehaviour());

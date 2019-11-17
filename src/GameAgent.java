@@ -114,8 +114,8 @@ public class GameAgent extends Agent {
             guiOrientation = 0;
         }
 
-        //System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
-        //System.out.println("--> gui orientation: " + guiOrientation);
+        // System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
+        // System.out.println("--> gui orientation: " + guiOrientation);
         return guiOrientation;
     }
 
@@ -382,7 +382,6 @@ public class GameAgent extends Agent {
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
             ((GameAgent) myAgent).setCurrOrientation(orientation);
-
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
 
@@ -433,8 +432,16 @@ public class GameAgent extends Agent {
 
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
-
-            double nextOrientation = ((GameAgent) myAgent).getNextRandomOrientation();
+            
+            double nextOrientation;
+            
+            if(!oldPos.equals(newPos)){   
+                nextOrientation = ((GameAgent) myAgent).getOrientationTo(oldPos, newPos);
+            }
+            else{
+                nextOrientation = ((GameAgent) myAgent).getNextRandomOrientation();
+            }
+           
             ((GameAgent) myAgent).setCurrOrientation(nextOrientation);
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + Math.toDegrees(nextOrientation) + ";";
