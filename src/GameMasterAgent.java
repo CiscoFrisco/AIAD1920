@@ -476,9 +476,9 @@ public class GameMasterAgent extends Agent {
             int x = Integer.parseInt(content[1]);
             int y = Integer.parseInt(content[2]);
 
-            for (int i = x - 1; i <= x + 1; i++) {
-                for (int j = y - 1; j <= y + 1; j++) {
-                    if ((i >= 0 && i < world.length) && (j >= 0 && j < world[i].length)) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((j >= 0 && j < world.length) && (i >= 0 && i < world[j].length)) {
                         if (world[j][i] == '+') {
                             available.add(new Position(i, j));
 

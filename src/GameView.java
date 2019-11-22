@@ -12,8 +12,6 @@ public class GameView extends JPanel {
     };
 
     private BufferedImage[][] graphics;
-    private static int width = 10;
-    private static int height = 10;
     private static int imageSize = 42;
     private TreeMap<Direction, BufferedImage> seekerImages;
     private TreeMap<Direction, BufferedImage> hiderImages;
@@ -21,7 +19,7 @@ public class GameView extends JPanel {
 
     public GameView(char[][] map) {
         loadImages();
-        graphics = new BufferedImage[height][width];
+        graphics = new BufferedImage[map.length][map[0].length];
         updateGraphics(map);
     }
 

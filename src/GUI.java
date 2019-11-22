@@ -36,11 +36,11 @@ public class GUI implements KeyListener {
 		gameFrame = new JFrame();
 		gameFrame.setTitle("Hide and Seek");
 		gameFrame.setResizable(false);
-		gameFrame.setBounds(100, 100, 400, 500);
+		gameFrame.setBounds(100, 100, 1000, 500);
 		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameFrame.getContentPane().setLayout(null);
         gameView = new GameView(myAgent.getWorld());
-        gameView.setBounds(18, 61, 329, 350);
+        gameView.setBounds(18, 61, 900, 350);
         gameFrame.getContentPane().add(gameView);
         gameView.repaint();
 
