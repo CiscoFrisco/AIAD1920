@@ -15,7 +15,7 @@ public class GameMasterAgent extends Agent {
     private ArrayList<AID> hiders;
     private ArrayList<AID> seekers;
     private int agents_ready;
-    char[][] world;
+    HideNSeekWorld world;
     private boolean waiting_move;
 
     private int rounds;
@@ -33,7 +33,7 @@ public class GameMasterAgent extends Agent {
     public void setup() {
 
         Object[] args = getArguments();
-        world = (char[][]) args[0];
+        world = (HideNSeekWorld) args[0];
         numSeekers = (int) args[1];
         numHiders = (int) args[2];
         rounds = (int) args[3];
@@ -45,24 +45,12 @@ public class GameMasterAgent extends Agent {
         waiting_move = true;
         agents_ready = 0;
         counter = 0;
-        printWorld();
+        world.printWorld();
         System.out.println("\n");
         warmup = (int) Math.floor(0.4 * rounds);
 
         registerMaster();
         getAgentsAID();
-    }
-
-    private int numObstacles() {
-        int count = 0;
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world[i].length; j++) {
-                if (world[i][j] == 'W')
-                    count++;
-            }
-        }
-
-        return count;
     }
 
     public void registerMaster() {
@@ -190,7 +178,7 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
             if (finished) {
-                ((GameMasterAgent) myAgent).printWorld();
+                ((GameMasterAgent) myAgent).getWorld().printWorld();
                 gui.updateStatus("SEEKERS WON");
                 System.out.println("SEEKERS WON");
                 addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
@@ -230,8 +218,8 @@ public class GameMasterAgent extends Agent {
     private String[] exportData() {
         String nHiders = String.valueOf(numHiders);
         String nSeekers = String.valueOf(numSeekers);
-        String nCells = String.valueOf(world.length * world[0].length);
-        String nObstacles = String.valueOf(numObstacles());
+        String nCells = String.valueOf(world.numCells());
+        String nObstacles = String.valueOf(world.numObstacles());
         String nMaxRounds = String.valueOf(rounds);
         String nCounter = String.valueOf(counter);
         String lyingProb = String.valueOf(lyingProbability);
@@ -340,7 +328,7 @@ public class GameMasterAgent extends Agent {
             master.setCounter(master.getCounter() + 1);
             gui.updateRounds(master.getCounter(), rounds);
             System.out.println(master.getCounter() + " out of " + master.rounds + "\n");
-            master.printWorld();
+            master.getWorld().printWorld();
 
             if (master.getCounter() == master.warmup) {
                 addBehaviour(new SignalWarmupEndBehaviour());
@@ -467,9 +455,10 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
 
+            char[][] world = ((GameMasterAgent) myAgent).getWorld().getWorld();
             fov = new FieldOfView(new Position(Integer.parseInt(content[1]), Integer.parseInt(content[2])),
                     Double.parseDouble(content[3]));
-            fov.calcCellsSeen(((GameMasterAgent) myAgent).getWorld());
+            fov.calcCellsSeen(world);
 
             ACLMessage reply = request.createReply();
             reply.setPerformative(ACLMessage.INFORM);
@@ -513,6 +502,7 @@ public class GameMasterAgent extends Agent {
         }
 
         public void action() {
+            char[][] world = ((GameMasterAgent) myAgent).getWorld().getWorld();
 
             int x = Integer.parseInt(content[1]);
             int y = Integer.parseInt(content[2]);
@@ -562,7 +552,7 @@ public class GameMasterAgent extends Agent {
             Position oldPos = new Position(Integer.parseInt(oldPos_s[0]), Integer.parseInt(oldPos_s[1]));
             Position newPos = new Position(Integer.parseInt(newPos_s[0]), Integer.parseInt(newPos_s[1]));
             double orientation = Double.parseDouble(content[3]);
-            char[][] new_world = ((GameMasterAgent) myAgent).getWorld();
+            char[][] new_world = ((GameMasterAgent) myAgent).getWorld().getWorld();
 
             char agent = new_world[oldPos.y][oldPos.x];
 
@@ -604,12 +594,12 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    public char[][] getWorld() {
+    public HideNSeekWorld getWorld() {
         return world;
     }
 
     public void setWorld(char[][] world) {
-        this.world = world;
+        this.world.setWorld(world);
     }
 
     public void incReady() {
@@ -618,15 +608,6 @@ public class GameMasterAgent extends Agent {
 
     public void resetReady() {
         this.agents_ready = 0;
-    }
-
-    public void printWorld() {
-        for (int i = 0; i < world.length; i++) {
-            for (int j = 0; j < world[i].length; j++) {
-                System.out.print(" | " + world[i][j]);
-            }
-            System.out.print(" |\n");
-        }
     }
 
     public ArrayList<AID> getHiders() {

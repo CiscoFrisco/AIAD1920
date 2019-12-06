@@ -17,25 +17,24 @@ public class HideNSeekWorld {
         hiders = new ArrayList<Position>();
         seekers = new ArrayList<Position>();
 
-        try{
-			BufferedReader reader = new BufferedReader(new FileReader(world_name));
-            
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(world_name));
+
             int height = Integer.parseInt(reader.readLine());
-			int width = Integer.parseInt(reader.readLine());
+            int width = Integer.parseInt(reader.readLine());
 
-			world = new char[height][width];
+            world = new char[height][width];
 
-			for(int i=0;i<height; i++)
-			{
-				String line = reader.readLine();
-				world[i] = line.toCharArray();
-			}
+            for (int i = 0; i < height; i++) {
+                String line = reader.readLine();
+                world[i] = line.toCharArray();
+            }
 
             reader.close();
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
+        } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
         }
-        
+
         setupWorld();
     }
 
@@ -43,26 +42,55 @@ public class HideNSeekWorld {
         return world;
     }
 
+    public void setWorld(char[][] world) {
+        this.world = world;
+    }
+
     public void setupWorld() {
         for (int i = 0; i < world.length; i++) {
             for (int j = 0; j < world[i].length; j++) {
                 switch (world[i][j]) {
                 case 'H':
-                    hiders.add(new Position(j,i));
+                    hiders.add(new Position(j, i));
                     break;
                 case 'S':
-                    seekers.add(new Position(j,i));
+                    seekers.add(new Position(j, i));
                     break;
                 }
             }
         }
     }
 
-    public ArrayList<Position> getHiders(){
+    public ArrayList<Position> getHiders() {
         return hiders;
     }
 
-    public ArrayList<Position> getSeekers(){
+    public ArrayList<Position> getSeekers() {
         return seekers;
+    }
+
+    public int numObstacles() {
+        int count = 0;
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world[i].length; j++) {
+                if (world[i][j] == 'W')
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
+    public int numCells() {
+        return world.length * world[0].length;
+    }
+
+    public void printWorld() {
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world[i].length; j++) {
+                System.out.print(" | " + world[i][j]);
+            }
+            System.out.print(" |\n");
+        }
     }
 }

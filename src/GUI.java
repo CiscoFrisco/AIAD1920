@@ -23,7 +23,7 @@ public class GUI implements KeyListener {
 
     public void updateMap()
 	{
-        gameView.updateGraphics(myAgent.getWorld());
+        gameView.updateGraphics(myAgent.getWorld().getWorld());
 		gameView.repaint();
     }
     
@@ -39,7 +39,7 @@ public class GUI implements KeyListener {
 		gameFrame.setBounds(100, 100, 1000, 500);
 		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         gameFrame.getContentPane().setLayout(null);
-        gameView = new GameView(myAgent.getWorld());
+        gameView = new GameView(myAgent.getWorld().getWorld());
         gameView.setBounds(18, 61, 900, 350);
         gameFrame.getContentPane().add(gameView);
         gameView.repaint();

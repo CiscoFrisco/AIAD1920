@@ -21,17 +21,18 @@ public class HideNSeek {
 
         HideNSeekWorld world = new HideNSeekWorld(args[0]);
         Logger.init();
-        CSVExport.init(args[1]);
+        CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
+                "Max Rounds", "Rounds Played", "Agents Lied" });
 
         createContainers();
 
-        createGameMaster(world.getWorld(), world.getSeekers().size(), world.getHiders().size(),
+        createGameMaster(world, world.getSeekers().size(), world.getHiders().size(),
                 Integer.parseInt(args[2]), Double.parseDouble(args[3]));
         createHiderAgents(world.getHiders(), Double.parseDouble(args[3]));
         createSeekerAgents(world.getSeekers(), Double.parseDouble(args[3]));
     }
 
-    public static void createGameMaster(char[][] world, int numSeekers, int numHiders, int maxRounds,
+    public static void createGameMaster(HideNSeekWorld world, int numSeekers, int numHiders, int maxRounds,
             double lyingProbability) {
 
         try {

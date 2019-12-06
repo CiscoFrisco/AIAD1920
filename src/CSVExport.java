@@ -13,25 +13,14 @@ import java.util.stream.Stream;
 
 public class CSVExport {
 
-    private static PrintWriter pw;
     private static File file;
     private static String[] columns;
-    private static String filename;
     private static Path path;
 
-    public static void init(String fileName){
-        try {
-            filename = fileName;
-            path = Paths.get(fileName);
-            file = new File(fileName);
-            FileWriter fw = new FileWriter(fileName, true);
-            pw = new PrintWriter(fw);
-            columns = new String[] {"Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability", "Max Rounds", "Rounds Played", "Agents Lied"};
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } // Set true for append mode
+    public static void init(String fileName, String[] cols) {
+        path = Paths.get(fileName);
+        file = new File(fileName);
+        columns = cols;
     }
 
     public static String escapeSpecialCharacters(String data) {
@@ -45,23 +34,19 @@ public class CSVExport {
 
     public static void writeLine(String[] line) {
 
-            try {
-
-                if(file.length() == 0){
-                    Files.write(path, Arrays.asList(convertToCSV(columns)), StandardCharsets.UTF_8,
-                    Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
-                }
-                Files.write(path, Arrays.asList(convertToCSV(line)), StandardCharsets.UTF_8,
-                         StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+        try {
+            if (file.length() == 0) {
+                Files.write(path, Arrays.asList(convertToCSV(columns)), StandardCharsets.UTF_8,
+                        Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
             }
+            Files.write(path, Arrays.asList(convertToCSV(line)), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public static String convertToCSV(String[] data) {
-        return Stream.of(data)
-          .map(CSVExport::escapeSpecialCharacters)
-          .collect(Collectors.joining(","));
+        return Stream.of(data).map(CSVExport::escapeSpecialCharacters).collect(Collectors.joining(","));
     }
 }
