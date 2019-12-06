@@ -25,6 +25,9 @@ public class GameMasterAgent extends Agent {
     private int numSeekers;
     private int numHiders;
 
+    private double lyingProbability;
+    private boolean lyingAgent;
+
     private GUI gui;
 
     public void setup() {
@@ -34,6 +37,8 @@ public class GameMasterAgent extends Agent {
         numSeekers = (int) args[1];
         numHiders = (int) args[2];
         rounds = (int) args[3];
+        lyingProbability = (double) args[4];
+        lyingAgent = false;
 
         gui = new GUI(this);
 
@@ -48,11 +53,11 @@ public class GameMasterAgent extends Agent {
         getAgentsAID();
     }
 
-    private int numObstacles(){
+    private int numObstacles() {
         int count = 0;
-        for(int i = 0; i< world.length; i++){
-            for(int j = 0; j < world[i].length; j++){
-                if(world[i][j] == 'W')
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world[i].length; j++) {
+                if (world[i][j] == 'W')
                     count++;
             }
         }
@@ -156,6 +161,9 @@ public class GameMasterAgent extends Agent {
                 case "FINISHED":
                     addBehaviour(new CheckFinishedBehaviour(content_splited));
                     break;
+                case "OPPONENTS":
+                    lyingAgent = true;
+                    break;
                 case "READY":
                     if (((GameMasterAgent) myAgent).getCounter() > ((GameMasterAgent) myAgent).getWarmup())
                         addBehaviour(new UpdateReadyAgentsBehaviour(false));
@@ -219,15 +227,17 @@ public class GameMasterAgent extends Agent {
         }
     }
 
-    private String[] exportData(){
+    private String[] exportData() {
         String nHiders = String.valueOf(numHiders);
         String nSeekers = String.valueOf(numSeekers);
-        String nCells = String.valueOf(world.length*world[0].length);
+        String nCells = String.valueOf(world.length * world[0].length);
         String nObstacles = String.valueOf(numObstacles());
         String nMaxRounds = String.valueOf(rounds);
         String nCounter = String.valueOf(counter);
+        String lyingProb = String.valueOf(lyingProbability);
+        String lie = String.valueOf(lyingAgent);
 
-        return new String[]{nHiders, nSeekers, nCells, nObstacles, nMaxRounds, nCounter};
+        return new String[] { nHiders, nSeekers, nCells, nObstacles, lyingProb, nMaxRounds, nCounter, lie };
     }
 
     public class EndMasterBehaviour extends OneShotBehaviour {
@@ -424,7 +434,8 @@ public class GameMasterAgent extends Agent {
                         String content = reply.getContent();
                         String[] splited = content.split("\\s+");
 
-                        Logger.writeLog(getAID().getName() + " received:" + reply.getContent() + " from " + splited[1], "master");
+                        Logger.writeLog(getAID().getName() + " received:" + reply.getContent() + " from " + splited[1],
+                                "master");
                     }
                 } else {
                     block();

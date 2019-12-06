@@ -13,8 +13,9 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException, InterruptedException {
 
-        if(args.length != 3){
-            System.err.println("Usage: java HideNSeek ../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS>");
+        if (args.length != 4) {
+            System.err.println(
+                    "Usage: java HideNSeek ../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS> <LYING_PROBABILITY>");
             System.exit(1);
         }
 
@@ -24,19 +25,22 @@ public class HideNSeek {
 
         createContainers();
 
-        createGameMaster(world.getWorld(), world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(args[2]));
-        createHiderAgents(world.getHiders());
-        createSeekerAgents(world.getSeekers());
+        createGameMaster(world.getWorld(), world.getSeekers().size(), world.getHiders().size(),
+                Integer.parseInt(args[2]), Double.parseDouble(args[3]));
+        createHiderAgents(world.getHiders(), Double.parseDouble(args[3]));
+        createSeekerAgents(world.getSeekers(), Double.parseDouble(args[3]));
     }
 
-    public static void createGameMaster(char[][] world, int numSeekers, int numHiders, int maxRounds) {
+    public static void createGameMaster(char[][] world, int numSeekers, int numHiders, int maxRounds,
+            double lyingProbability) {
 
         try {
-            Object[] args = new Object[4];
+            Object[] args = new Object[5];
             args[0] = world;
             args[1] = numSeekers;
             args[2] = numHiders;
             args[3] = maxRounds;
+            args[4] = lyingProbability;
             mainContainer.createNewAgent("Master", "GameMasterAgent", args).start();
         } catch (StaleProxyException e) {
             e.printStackTrace();
@@ -44,12 +48,13 @@ public class HideNSeek {
 
     }
 
-    public static void createHiderAgents(ArrayList<Position> hiders) {
+    public static void createHiderAgents(ArrayList<Position> hiders, double lyingProbability) {
 
         try {
             for (int i = 0; i < hiders.size(); i++) {
-                Object[] args = new Object[1];
+                Object[] args = new Object[2];
                 args[0] = hiders.get(i);
+                args[1] = lyingProbability;
                 hidersContainer.createNewAgent("Hider" + i, "HiderAgent", args).start();
             }
         } catch (StaleProxyException e) {
@@ -58,12 +63,13 @@ public class HideNSeek {
 
     }
 
-    public static void createSeekerAgents(ArrayList<Position> seekers) {
+    public static void createSeekerAgents(ArrayList<Position> seekers, double lyingProbability) {
 
         try {
             for (int i = 0; i < seekers.size(); i++) {
-                Object[] args = new Object[1];
+                Object[] args = new Object[2];
                 args[0] = seekers.get(i);
+                args[1] = lyingProbability;
                 seekersContainer.createNewAgent("Seeker" + i, "SeekerAgent", args).start();
             }
         } catch (StaleProxyException e) {

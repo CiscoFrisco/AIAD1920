@@ -16,12 +16,10 @@ public class SeekerAgent extends GameAgent {
 
     private ArrayList<AID> seekers;
     private int num_replies;
-    private ArrayList<Position> knownPositions;
 
     public void setup() {
         super.setup();
         this.num_replies = 0;
-        this.knownPositions = new ArrayList<Position>(10);
 
         registerSeeker();
         getSeekersAID();
@@ -255,101 +253,8 @@ public class SeekerAgent extends GameAgent {
         return num_replies;
     }
 
-    public ArrayList<Position> getKnownPositions() {
-        return knownPositions;
-    }
-
     public void setNum_replies(int num_replies) {
         this.num_replies = num_replies;
     }
 
-    public void addPosition(Position pos) {
-        if (!knownPositions.contains(pos)) {
-            if (knownPositions.size() == 10) {
-                knownPositions.remove(0);
-            }
-            knownPositions.add(pos);
-        }
-    }
-
-    public class SendBestMoveBehaviour extends OneShotBehaviour {
-
-        private Position newPos;
-        private double orientation;
-
-        public SendBestMoveBehaviour(Position move, double orientation) {
-            super();
-            this.newPos = move;
-            this.orientation = orientation;
-        }
-
-        public void action() {
-            // send Position and Orientation to Master
-            ACLMessage move = new ACLMessage(ACLMessage.INFORM);
-            move.addReceiver(((GameAgent) myAgent).getMasterAID());
-
-            Position oldPos = ((GameAgent) myAgent).getPos();
-
-            // update Agent Position and Orientation
-            ((GameAgent) myAgent).setPos(newPos);
-            ((SeekerAgent) myAgent).addPosition(newPos);
-            ((GameAgent) myAgent).setCurrOrientation(orientation);
-            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
-
-            move.setContent(content);
-            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
-            ((GameAgent) myAgent).send(move);
-            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
-        }
-    }
-
-    public class SendRandomMoveBehaviour extends OneShotBehaviour {
-
-        public void action() {
-
-            ArrayList<Position> knownPositions = ((SeekerAgent) myAgent).getKnownPositions();
-            ArrayList<Position> availableMoves = ((GameAgent) myAgent).getMovesAvailable();
-            ArrayList<Position> c = new ArrayList<>(availableMoves);
-            c.removeAll(knownPositions);
-            Position newPos = new Position(0, 0);
-
-            if (c.isEmpty()) {
-                knownPositions.retainAll(availableMoves);
-                newPos = knownPositions.get(0);
-            } else {
-                // calc random move
-                int random_limit = c.size();
-                int selectedRandom = ThreadLocalRandom.current().nextInt(0, random_limit);
-                newPos = c.get(selectedRandom);
-            }
-
-            // send Position and Orientation to Master
-            ACLMessage move = new ACLMessage(ACLMessage.INFORM);
-            move.addReceiver(((GameAgent) myAgent).getMasterAID());
-
-            Position oldPos = ((GameAgent) myAgent).getPos();
-
-            // update Agent Position and Orientation
-            ((GameAgent) myAgent).setPos(newPos);
-            ((SeekerAgent) myAgent).addPosition(newPos);
-
-            double nextOrientation;
-
-            if (!oldPos.equals(newPos)) {
-                nextOrientation = ((GameAgent) myAgent).getOrientationTo(oldPos, newPos);
-            } else {
-                nextOrientation = ((GameAgent) myAgent).getNextRandomOrientation();
-            }
-
-            ((GameAgent) myAgent).setCurrOrientation(nextOrientation);
-            String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
-                    + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
-
-            move.setContent(content);
-            move.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
-            ((GameAgent) myAgent).send(move);
-            Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + move.getContent(), "master");
-        }
-    }
 }

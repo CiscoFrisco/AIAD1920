@@ -21,12 +21,12 @@ public class Logger {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         String now = sdf.format(timestamp);
 
-        String logs_folder = "logs/";
+        String logs_folder = "../logs/";
         String master_agents_file = logs_folder + "master_agents_" + now + ".txt";
         String hiders_file = logs_folder + "hiders_" + now + ".txt";
         String seekers_file = logs_folder + "seekers_" + now + ".txt";
 
-        File directory = new File("logs/");
+        File directory = new File("../logs/");
         if (!directory.exists()) {
             directory.mkdir();
         }

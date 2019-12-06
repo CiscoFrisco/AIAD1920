@@ -21,22 +21,39 @@ public class GameAgent extends Agent {
     double currOrientation;
     private LinkedHashSet<Position> cellsSeen;
     private ArrayList<Position> moves;
+    private double lyingProbability;
+    private ArrayList<Position> knownPositions;
 
     public void setup() {
 
         Object[] args = getArguments();
         pos = (Position) args[0];
+        lyingProbability = (double) args[1];
         isGrabbing = false;
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
         moves = new ArrayList<Position>();
-        this.warming = true;
+        warming = true;
+        knownPositions = new ArrayList<Position>(10);
 
         initMasterAID();
     }
 
     public boolean isWarming() {
         return warming;
+    }
+
+    public ArrayList<Position> getKnownPositions() {
+        return knownPositions;
+    }
+
+    public void addPosition(Position pos) {
+        if (!knownPositions.contains(pos)) {
+            if (knownPositions.size() == 10) {
+                knownPositions.remove(0);
+            }
+            knownPositions.add(pos);
+        }
     }
 
     public void setWarming(boolean warming) {
@@ -101,20 +118,18 @@ public class GameAgent extends Agent {
     public double getGuiOrientation() {
         double guiOrientation;
 
-        if (currOrientation > Math.toRadians(45)  && currOrientation < Math.toRadians(135)) {
+        if (currOrientation > Math.toRadians(45) && currOrientation < Math.toRadians(135)) {
             guiOrientation = 90;
-        }
-        else if (currOrientation >= Math.toRadians(135) && currOrientation <= Math.toRadians(225)) {
+        } else if (currOrientation >= Math.toRadians(135) && currOrientation <= Math.toRadians(225)) {
             guiOrientation = 180;
-        }
-        else if (currOrientation > Math.toRadians(225) &&  currOrientation < Math.toRadians(315)) {
+        } else if (currOrientation > Math.toRadians(225) && currOrientation < Math.toRadians(315)) {
             guiOrientation = 270;
-        }
-        else {
+        } else {
             guiOrientation = 0;
         }
 
-        // System.out.println("--> curr orientation: " + Math.toDegrees(this.currOrientation));
+        // System.out.println("--> curr orientation: " +
+        // Math.toDegrees(this.currOrientation));
         // System.out.println("--> gui orientation: " + guiOrientation);
         return guiOrientation;
     }
@@ -220,31 +235,44 @@ public class GameAgent extends Agent {
     public double getOrientationTo(Position origin, Position destiny) {
         double deltaX = destiny.getX() - origin.getX();
         double deltaY = destiny.getY() - origin.getY();
-        
+
         double h = this.getDistance(origin, destiny);
         double co = Math.abs(deltaY);
-        double angle = Math.asin(co/h);
-    
+        double angle = Math.asin(co / h);
+
         double orientation;
         if (deltaX >= 0 && deltaY < 0) {
             orientation = angle;
-        }
-        else if (deltaX < 0 && deltaY <= 0) {
+        } else if (deltaX < 0 && deltaY <= 0) {
             orientation = Math.PI - angle;
-        }
-        else if (deltaX <= 0 && deltaY > 0) {
+        } else if (deltaX <= 0 && deltaY > 0) {
             orientation = Math.PI + angle;
-        }
-        else {
-            orientation = 2*Math.PI - angle;
+        } else {
+            orientation = 2 * Math.PI - angle;
         }
 
-        //System.out.println("--> agent: " + this.getAID().getName());
-        //System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
-        //System.out.println("--> destiny: " + destiny.getX() + " , " + destiny.getY());
-        //System.out.println("--> oritentation: " + Math.toDegrees(orientation));
+        // System.out.println("--> agent: " + this.getAID().getName());
+        // System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
+        // System.out.println("--> destiny: " + destiny.getX() + " , " +
+        // destiny.getY());
+        // System.out.println("--> oritentation: " + Math.toDegrees(orientation));
 
         return orientation;
+    }
+
+    public Position getMaxKnownXY() {
+        int maxX = 0;
+        int maxY = 0;
+
+        for (Position pos : knownPositions) {
+            if (pos.getX() > maxX)
+                maxX = pos.getX();
+
+            if (pos.getY() > maxY)
+                maxY = pos.getY();
+        }
+
+        return new Position(maxX, maxY);
     }
 
     public double getDistance(Position p1, Position p2) {
@@ -307,21 +335,18 @@ public class GameAgent extends Agent {
                 cellsArray.add(new Position(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1])));
             }
 
-            if ( !((GameAgent) myAgent).isWarming() ) {
+            if (!((GameAgent) myAgent).isWarming()) {
                 ((GameAgent) myAgent).setCellsSeen(cells);
-            }
-            else {
+            } else {
                 ((GameAgent) myAgent).addOpponents(cellsArray);
             }
-            
 
             if (this.partnersAID.size() > 0) {
                 addBehaviour(new PositionRequestBehaviour(this.partnersAID));
-            }
-            else {
+            } else {
                 addBehaviour(new SendReadyBehaviour());
             }
-            
+
         }
     }
 
@@ -345,10 +370,21 @@ public class GameAgent extends Agent {
 
             String content = "OPPONENTS;";
 
-            LinkedHashSet<Position> hiders_seen = ((GameAgent) myAgent).getCellsSeen();
+            double randomNum = ThreadLocalRandom.current().nextDouble(0, 100 + 1);
+            System.out.println(randomNum);
+            if (randomNum < lyingProbability) {
+                request.addReceiver(((GameAgent) myAgent).getMasterAID());
+                Position max = ((GameAgent) myAgent).getMaxKnownXY();
 
-            for (Position hider : hiders_seen) {
-                content += hider.getX() + "," + hider.getY() + ";";
+                int x = ThreadLocalRandom.current().nextInt(0, max.getX() + 1);
+                int y = ThreadLocalRandom.current().nextInt(0, max.getY() + 1);
+                content += x + "," + y + ";";
+            } else {
+                LinkedHashSet<Position> hiders_seen = ((GameAgent) myAgent).getCellsSeen();
+
+                for (Position hider : hiders_seen) {
+                    content += hider.getX() + "," + hider.getY() + ";";
+                }
             }
 
             request.setContent(content);
@@ -381,6 +417,8 @@ public class GameAgent extends Agent {
 
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
+            ((GameAgent) myAgent).addPosition(newPos);
+
             ((GameAgent) myAgent).setCurrOrientation(orientation);
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";
@@ -419,29 +457,40 @@ public class GameAgent extends Agent {
 
         public void action() {
 
-            // calc random move
-            int random_limit = ((GameAgent) myAgent).getMovesAvailable().size();
-            int selectedRandom = ThreadLocalRandom.current().nextInt(0, random_limit);
+            ArrayList<Position> knownPositions = ((GameAgent) myAgent).getKnownPositions();
+            ArrayList<Position> availableMoves = ((GameAgent) myAgent).getMovesAvailable();
+            ArrayList<Position> c = new ArrayList<>(availableMoves);
+            c.removeAll(knownPositions);
+            Position newPos = new Position(0, 0);
+
+            if (c.isEmpty()) {
+                knownPositions.retainAll(availableMoves);
+                newPos = knownPositions.get(0);
+            } else {
+                // calc random move
+                int random_limit = c.size();
+                int selectedRandom = ThreadLocalRandom.current().nextInt(0, random_limit);
+                newPos = c.get(selectedRandom);
+            }
 
             // send Position and Orientation to Master
             ACLMessage move = new ACLMessage(ACLMessage.INFORM);
             move.addReceiver(((GameAgent) myAgent).getMasterAID());
 
             Position oldPos = ((GameAgent) myAgent).getPos();
-            Position newPos = ((GameAgent) myAgent).getMovesAvailable().get(selectedRandom);
 
             // update Agent Position and Orientation
             ((GameAgent) myAgent).setPos(newPos);
-            
+            ((GameAgent) myAgent).addPosition(newPos);
+
             double nextOrientation;
-            
-            if(!oldPos.equals(newPos)){   
+
+            if (!oldPos.equals(newPos)) {
                 nextOrientation = ((GameAgent) myAgent).getOrientationTo(oldPos, newPos);
-            }
-            else{
+            } else {
                 nextOrientation = ((GameAgent) myAgent).getNextRandomOrientation();
             }
-           
+
             ((GameAgent) myAgent).setCurrOrientation(nextOrientation);
             String content = "MOVE;" + oldPos.getX() + "," + oldPos.getY() + ";" + newPos.getX() + "," + newPos.getY()
                     + ";" + ((GameAgent) myAgent).getGuiOrientation() + ";";

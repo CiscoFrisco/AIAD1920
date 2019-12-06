@@ -26,7 +26,7 @@ public class CSVExport {
             file = new File(fileName);
             FileWriter fw = new FileWriter(fileName, true);
             pw = new PrintWriter(fw);
-            columns = new String[] {"Hiders", "Seekers", "Cells", "Obstacles", "Max Rounds", "Rounds Played"};
+            columns = new String[] {"Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability", "Max Rounds", "Rounds Played", "Agents Lied"};
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
