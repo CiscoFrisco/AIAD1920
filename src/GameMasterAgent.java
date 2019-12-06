@@ -22,12 +22,18 @@ public class GameMasterAgent extends Agent {
     private int warmup;
     private int counter;
 
+    private int numSeekers;
+    private int numHiders;
+
     private GUI gui;
 
     public void setup() {
 
         Object[] args = getArguments();
         world = (char[][]) args[0];
+        numSeekers = (int) args[1];
+        numHiders = (int) args[2];
+        rounds = (int) args[3];
 
         gui = new GUI(this);
 
@@ -36,11 +42,22 @@ public class GameMasterAgent extends Agent {
         counter = 0;
         printWorld();
         System.out.println("\n");
-        rounds = 50;
         warmup = (int) Math.floor(0.4 * rounds);
 
         registerMaster();
         getAgentsAID();
+    }
+
+    private int numObstacles(){
+        int count = 0;
+        for(int i = 0; i< world.length; i++){
+            for(int j = 0; j < world[i].length; j++){
+                if(world[i][j] == 'W')
+                    count++;
+            }
+        }
+
+        return count;
     }
 
     public void registerMaster() {
@@ -195,9 +212,22 @@ public class GameMasterAgent extends Agent {
 
             ((GameMasterAgent) myAgent).send(request);
             Logger.writeLog(getAID().getName() + " sent: " + request.getContent(), "master");
+            CSVExport.writeLine(((GameMasterAgent) myAgent).exportData());
 
             addBehaviour(new EndMasterBehaviour());
+
         }
+    }
+
+    private String[] exportData(){
+        String nHiders = String.valueOf(numHiders);
+        String nSeekers = String.valueOf(numSeekers);
+        String nCells = String.valueOf(world.length*world[0].length);
+        String nObstacles = String.valueOf(numObstacles());
+        String nMaxRounds = String.valueOf(rounds);
+        String nCounter = String.valueOf(counter);
+
+        return new String[]{nHiders, nSeekers, nCells, nObstacles, nMaxRounds, nCounter};
     }
 
     public class EndMasterBehaviour extends OneShotBehaviour {

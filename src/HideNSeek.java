@@ -13,21 +13,30 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException, InterruptedException {
 
+        if(args.length != 3){
+            System.err.println("Usage: java HideNSeek ../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS>");
+            System.exit(1);
+        }
+
         HideNSeekWorld world = new HideNSeekWorld(args[0]);
         Logger.init();
+        CSVExport.init(args[1]);
 
         createContainers();
 
-        createGameMaster(world.getWorld());
+        createGameMaster(world.getWorld(), world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(args[2]));
         createHiderAgents(world.getHiders());
         createSeekerAgents(world.getSeekers());
     }
 
-    public static void createGameMaster(char[][] world) {
+    public static void createGameMaster(char[][] world, int numSeekers, int numHiders, int maxRounds) {
 
         try {
-            Object[] args = new Object[1];
+            Object[] args = new Object[4];
             args[0] = world;
+            args[1] = numSeekers;
+            args[2] = numHiders;
+            args[3] = maxRounds;
             mainContainer.createNewAgent("Master", "GameMasterAgent", args).start();
         } catch (StaleProxyException e) {
             e.printStackTrace();
