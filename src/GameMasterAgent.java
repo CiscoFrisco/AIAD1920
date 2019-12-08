@@ -230,6 +230,11 @@ public class GameMasterAgent extends Agent {
 
     public class EndMasterBehaviour extends OneShotBehaviour {
         public void action() {
+            try {
+                DFService.deregister((GameMasterAgent) myAgent);
+            } catch (FIPAException e) {
+                e.printStackTrace();
+            }
             ((GameMasterAgent) myAgent).doDelete();
         }
     }
