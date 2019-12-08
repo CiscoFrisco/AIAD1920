@@ -18,31 +18,33 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException, InterruptedException, IOException {
 
-        if (args.length != 1) {
+        if (args.length != 2) {
             System.err.println(
-                    "Usage: java HideNSeek <EXEC_FILE>.csv\n Each execution follows the next syntax: <../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS> <LYING_PROBABILITY>>");
+                    "Usage: java HideNSeek ../csv/<INPUT_FILE>.csv ../csv/<OUTPUT_FILE>.csv");
             System.exit(1);
         }
 
         createContainers();
-
         Logger.init();
 
         BufferedReader reader = new BufferedReader(new FileReader(args[0]));
         String exec;
 
+        reader.readLine(); //read headers
+
         while( (exec = reader.readLine()) != null) {
 
-            String[] exec_split = exec.split(" ");
+            String[] exec_split = exec.split(",");
+            System.out.println(exec_split[0]);
             HideNSeekWorld world = new HideNSeekWorld(exec_split[0]);
 
-            CSVExport.init(exec_split[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
+            CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
                 "Max Rounds", "Rounds Played", "Agents Lied" });
             
-            createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[2]),
+            createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[6]),
                     Double.parseDouble(exec_split[3]));
-            createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[3]));
-            createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[3]));
+            createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[5]));
+            createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[5]));
             
             //wait for game to end
             try {

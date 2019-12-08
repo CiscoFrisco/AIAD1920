@@ -1,0 +1,5 @@
+FileName,Hiders,Seekers,Cells,Obstacles,Lying Probability,Max Rounds
+../res/worlds/world2.txt,1,2,49,9,0.05548824920689743,22
+../res/worlds/world2.txt,1,2,49,9,0.6991916817915733,14
+../res/worlds/open.txt,2,2,25,0,0.4331978575602079,10
+../res/worlds/large2.txt,6,2,160,66,0.6628271598354993,42
