@@ -1,5 +1,10 @@
 import jade.core.*;
 import jade.wrapper.*;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class HideNSeek {
@@ -11,34 +16,41 @@ public class HideNSeek {
     private static ContainerController hidersContainer;
     private static ContainerController seekersContainer;
 
-    public static void main(String[] args) throws StaleProxyException, InterruptedException {
+    public static void main(String[] args) throws StaleProxyException, InterruptedException, IOException {
 
-        if (args.length != 4) {
+        if (args.length != 1) {
             System.err.println(
-                    "Usage: java HideNSeek ../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS> <LYING_PROBABILITY>");
+                    "Usage: java HideNSeek <EXEC_FILE>.csv\n Each execution follows the next syntax: <../res/worlds/<WORLD>.txt ../csv/<CSV_FILE>.csv <NUM_MAX_ROUNDS> <LYING_PROBABILITY>>");
             System.exit(1);
         }
 
-        Logger.init();
-        CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
-                "Max Rounds", "Rounds Played", "Agents Lied" });
         createContainers();
 
-        for (int i = 0; i < 2; i++) {
+        Logger.init();
+
+        BufferedReader reader = new BufferedReader(new FileReader(args[0]));
+        String exec;
+
+        while( (exec = reader.readLine()) != null) {
+
+            String[] exec_split = exec.split(" ");
+            HideNSeekWorld world = new HideNSeekWorld(exec_split[0]);
+
+            CSVExport.init(exec_split[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
+                "Max Rounds", "Rounds Played", "Agents Lied" });
             
-            HideNSeekWorld world = new HideNSeekWorld(args[0]);
-            
-            createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(args[2]),
-                    Double.parseDouble(args[3]));
-            createHiderAgents(world.getHiders(), Double.parseDouble(args[3]));
-            createSeekerAgents(world.getSeekers(), Double.parseDouble(args[3]));
+            createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[2]),
+                    Double.parseDouble(exec_split[3]));
+            createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[3]));
+            createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[3]));
             
             //wait for game to end
             try {
                 while (mainContainer.getAgent("Master") != null) {}
             } catch (ControllerException e) {}
         }
-
+        
+        reader.close();
         System.out.println("Execution finished!!");
     }
 

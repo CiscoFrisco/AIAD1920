@@ -345,7 +345,7 @@ public class GameMasterAgent extends Agent {
                 addBehaviour(new SignalTurnBehaviour(false));
             }
 
-            if (master.getCounter() > master.rounds) {
+            if (master.getCounter() >= master.rounds) {
                 System.out.println("HIDERS WON");
                 gui.updateStatus("HIDERS WON");
                 addBehaviour(new SendEndGameBehaviour());

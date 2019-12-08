@@ -1,0 +1,2 @@
+../res/worlds/open.txt ../csv/oi.csv 10 0.05
+../res/worlds/large.txt ../csv/oi.csv 35 0.5
