@@ -31,6 +31,7 @@ public class HideNSeek {
         String exec;
 
         reader.readLine(); //read headers
+        int curr_exec = 1; //current execution
 
         while( (exec = reader.readLine()) != null) {
 
@@ -43,13 +44,15 @@ public class HideNSeek {
             
             createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[6]),
                     Double.parseDouble(exec_split[3]));
-            createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[5]));
-            createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[5]));
+            createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[5]), curr_exec);
+            createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[5]), curr_exec);
             
             //wait for game to end
             try {
                 while (mainContainer.getAgent("Master") != null) {}
             } catch (ControllerException e) {}
+
+            curr_exec++;
         }
         
         reader.close();
@@ -73,14 +76,15 @@ public class HideNSeek {
 
     }
 
-    public static void createHiderAgents(ArrayList<Position> hiders, double lyingProbability) {
+    public static void createHiderAgents(ArrayList<Position> hiders, double lyingProbability, int exec) {
 
         try {
             for (int i = 0; i < hiders.size(); i++) {
                 Object[] args = new Object[2];
                 args[0] = hiders.get(i);
                 args[1] = lyingProbability;
-                hidersContainer.createNewAgent("Hider" + i, "HiderAgent", args).start();
+                System.out.println("Hider" + exec + i);
+                hidersContainer.createNewAgent("Hider" + exec + i, "HiderAgent", args).start();
             }
         } catch (StaleProxyException e) {
             e.printStackTrace();
@@ -88,14 +92,15 @@ public class HideNSeek {
 
     }
 
-    public static void createSeekerAgents(ArrayList<Position> seekers, double lyingProbability) {
+    public static void createSeekerAgents(ArrayList<Position> seekers, double lyingProbability, int exec) {
 
         try {
             for (int i = 0; i < seekers.size(); i++) {
                 Object[] args = new Object[2];
                 args[0] = seekers.get(i);
                 args[1] = lyingProbability;
-                seekersContainer.createNewAgent("Seeker" + i, "SeekerAgent", args).start();
+                System.out.println("Seeker" + exec + i);
+                seekersContainer.createNewAgent("Seeker" + exec +  i, "SeekerAgent", args).start();
             }
         } catch (StaleProxyException e) {
             e.printStackTrace();

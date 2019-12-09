@@ -323,7 +323,7 @@ public class GameMasterAgent extends Agent {
         private boolean seekersWon;
 
         public PlayBehaviour() {
-            super(null, 1000);
+            super(null, 500);
             this.seekersWon = false;
         }
 
