@@ -42,7 +42,7 @@ public class HideNSeek {
                 "Max Rounds", "Rounds Played", "Agents Lied" });
             
             createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[6]),
-                    Double.parseDouble(exec_split[3]), Boolean.parseBoolean(args[2]), curr_exec);
+                    Double.parseDouble(exec_split[5]), Boolean.parseBoolean(args[2]), curr_exec);
             createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[5]), curr_exec);
             createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[5]), curr_exec);
             
