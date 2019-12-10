@@ -65,6 +65,16 @@ public class GameAgent extends Agent {
             this.cellsSeen.add(opponent);
     }
 
+    
+    protected void takeDown() {
+        try {
+            DFService.deregister(this);
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
+        //
+    }
+
     public void removeDuplicateOpponents() {
 
         LinkedHashSet<Position> newList = new LinkedHashSet<Position>();
@@ -128,9 +138,6 @@ public class GameAgent extends Agent {
             guiOrientation = 0;
         }
 
-        // System.out.println("--> curr orientation: " +
-        // Math.toDegrees(this.currOrientation));
-        // System.out.println("--> gui orientation: " + guiOrientation);
         return guiOrientation;
     }
 
@@ -251,12 +258,6 @@ public class GameAgent extends Agent {
             orientation = 2 * Math.PI - angle;
         }
 
-        // System.out.println("--> agent: " + this.getAID().getName());
-        // System.out.println("--> origin: " + origin.getX() + " , " + origin.getY());
-        // System.out.println("--> destiny: " + destiny.getX() + " , " +
-        // destiny.getY());
-        // System.out.println("--> oritentation: " + Math.toDegrees(orientation));
-
         return orientation;
     }
 
@@ -371,7 +372,6 @@ public class GameAgent extends Agent {
             String content = "OPPONENTS;";
 
             double randomNum = ThreadLocalRandom.current().nextDouble(0, 100 + 1);
-            System.out.println(randomNum);
             if (randomNum < lyingProbability) {
                 request.addReceiver(((GameAgent) myAgent).getMasterAID());
                 Position max = ((GameAgent) myAgent).getMaxKnownXY();
@@ -512,17 +512,6 @@ public class GameAgent extends Agent {
             request.setConversationId("req" + ((GameAgent) myAgent).getAID().getName());
             ((GameAgent) myAgent).send(request);
             Logger.writeLog(((GameAgent) myAgent).getAID().getName() + " sent: " + request.getContent(), "master");
-        }
-    }
-
-    public class EndAgentBehaviour extends OneShotBehaviour {
-        public void action() {
-            try {
-                DFService.deregister((GameAgent) myAgent);
-            } catch (FIPAException e) {
-                e.printStackTrace();
-            }
-            ((GameAgent) myAgent).doDelete();
         }
     }
 }

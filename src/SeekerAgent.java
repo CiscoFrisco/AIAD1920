@@ -131,7 +131,7 @@ public class SeekerAgent extends GameAgent {
                     break;
                 case "END":
                     if (!((GameAgent) myAgent).isWarming())
-                        addBehaviour(new EndAgentBehaviour());
+                        doDelete();
                     break;
                 default:
                     break;

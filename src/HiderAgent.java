@@ -116,7 +116,7 @@ public class HiderAgent extends GameAgent {
                     addBehaviour(new AvailableMovesRequestBehaviour());
                     break;
                 case "END":
-                    addBehaviour(new EndAgentBehaviour());
+                    doDelete();
                     break;
                 default:
                     break;

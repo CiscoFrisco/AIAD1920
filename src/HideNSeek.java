@@ -18,14 +18,14 @@ public class HideNSeek {
 
     public static void main(String[] args) throws StaleProxyException, InterruptedException, IOException {
 
-        if (args.length != 2) {
+        if (args.length != 3) {
             System.err.println(
-                    "Usage: java HideNSeek ../csv/<INPUT_FILE>.csv ../csv/<OUTPUT_FILE>.csv");
+                    "Usage: java HideNSeek ../csv/<INPUT_FILE>.csv ../csv/<OUTPUT_FILE>.csv <TEST>");
             System.exit(1);
         }
 
         createContainers();
-        Logger.init();
+        Logger.init(Boolean.parseBoolean(args[2]));
 
         BufferedReader reader = new BufferedReader(new FileReader(args[0]));
         String exec;
@@ -36,22 +36,20 @@ public class HideNSeek {
         while( (exec = reader.readLine()) != null) {
 
             String[] exec_split = exec.split(",");
-            System.out.println(exec_split[0]);
             HideNSeekWorld world = new HideNSeekWorld(exec_split[0]);
 
             CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
                 "Max Rounds", "Rounds Played", "Agents Lied" });
             
             createGameMaster(world, world.getSeekers().size(), world.getHiders().size(), Integer.parseInt(exec_split[6]),
-                    Double.parseDouble(exec_split[3]));
+                    Double.parseDouble(exec_split[3]), Boolean.parseBoolean(args[2]), curr_exec);
             createHiderAgents(world.getHiders(), Double.parseDouble(exec_split[5]), curr_exec);
             createSeekerAgents(world.getSeekers(), Double.parseDouble(exec_split[5]), curr_exec);
             
-            //wait for game to end
             try {
-                while (mainContainer.getAgent("Master") != null) {}
+                while (mainContainer.getAgent("Master" + curr_exec) != null) {}
             } catch (ControllerException e) {}
-
+            System.out.println(curr_exec + " finished");
             curr_exec++;
         }
         
@@ -60,16 +58,17 @@ public class HideNSeek {
     }
 
     public static void createGameMaster(HideNSeekWorld world, int numSeekers, int numHiders, int maxRounds,
-            double lyingProbability) {
+            double lyingProbability, boolean test, int exec) {
 
         try {
-            Object[] args = new Object[5];
+            Object[] args = new Object[6];
             args[0] = world;
             args[1] = numSeekers;
             args[2] = numHiders;
             args[3] = maxRounds;
             args[4] = lyingProbability;
-            mainContainer.createNewAgent("Master", "GameMasterAgent", args).start();
+            args[5] = test;
+            mainContainer.createNewAgent("Master" + exec, "GameMasterAgent", args).start();
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
@@ -83,7 +82,6 @@ public class HideNSeek {
                 Object[] args = new Object[2];
                 args[0] = hiders.get(i);
                 args[1] = lyingProbability;
-                System.out.println("Hider" + exec + i);
                 hidersContainer.createNewAgent("Hider" + exec + i, "HiderAgent", args).start();
             }
         } catch (StaleProxyException e) {
@@ -99,7 +97,6 @@ public class HideNSeek {
                 Object[] args = new Object[2];
                 args[0] = seekers.get(i);
                 args[1] = lyingProbability;
-                System.out.println("Seeker" + exec + i);
                 seekersContainer.createNewAgent("Seeker" + exec +  i, "SeekerAgent", args).start();
             }
         } catch (StaleProxyException e) {

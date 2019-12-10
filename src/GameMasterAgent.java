@@ -27,6 +27,7 @@ public class GameMasterAgent extends Agent {
 
     private double lyingProbability;
     private boolean lyingAgent;
+    private boolean test;
 
     private GUI gui;
 
@@ -39,14 +40,14 @@ public class GameMasterAgent extends Agent {
         rounds = (int) args[3];
         lyingProbability = (double) args[4];
         lyingAgent = false;
+        test = (boolean) args[5];
 
-        gui = new GUI(this);
+        if (!test)
+            gui = new GUI(this);
 
         waiting_move = true;
         agents_ready = 0;
         counter = 0;
-        world.printWorld();
-        System.out.println("\n");
         warmup = (int) Math.floor(0.4 * rounds);
 
         registerMaster();
@@ -178,9 +179,11 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
             if (finished) {
-                ((GameMasterAgent) myAgent).getWorld().printWorld();
-                gui.updateStatus("SEEKERS WON");
-                System.out.println("SEEKERS WON");
+                if (!((GameMasterAgent) myAgent).test)
+                {
+                    ((GameMasterAgent) myAgent).getWorld().printWorld();
+                    gui.updateStatus("SEEKERS WON");
+                }
                 addBehaviour(new SendEndGameBehaviour()); // send end of game to every agent
             } else {
                 ((GameMasterAgent) myAgent).setWaiting_move(false);
@@ -210,9 +213,18 @@ public class GameMasterAgent extends Agent {
             Logger.writeLog(getAID().getName() + " sent: " + request.getContent(), "master");
             CSVExport.writeLine(((GameMasterAgent) myAgent).exportData());
 
-            addBehaviour(new EndMasterBehaviour());
+            doDelete();
 
         }
+    }
+
+    protected void takeDown() {
+        try {
+            DFService.deregister(this);
+        } catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
+        //
     }
 
     private String[] exportData() {
@@ -226,17 +238,6 @@ public class GameMasterAgent extends Agent {
         String lie = String.valueOf(lyingAgent);
 
         return new String[] { nHiders, nSeekers, nCells, nObstacles, lyingProb, nMaxRounds, nCounter, lie };
-    }
-
-    public class EndMasterBehaviour extends OneShotBehaviour {
-        public void action() {
-            try {
-                DFService.deregister((GameMasterAgent) myAgent);
-            } catch (FIPAException e) {
-                e.printStackTrace();
-            }
-            ((GameMasterAgent) myAgent).doDelete();
-        }
     }
 
     public class UpdateReadyAgentsBehaviour extends OneShotBehaviour {
@@ -331,9 +332,8 @@ public class GameMasterAgent extends Agent {
             GameMasterAgent master = (GameMasterAgent) myAgent;
 
             master.setCounter(master.getCounter() + 1);
-            gui.updateRounds(master.getCounter(), rounds);
-            System.out.println(master.getCounter() + " out of " + master.rounds + "\n");
-            master.getWorld().printWorld();
+            if (!master.test)
+                gui.updateRounds(master.getCounter(), rounds);
 
             if (master.getCounter() == master.warmup) {
                 addBehaviour(new SignalWarmupEndBehaviour());
@@ -346,8 +346,8 @@ public class GameMasterAgent extends Agent {
             }
 
             if (master.getCounter() >= master.rounds) {
-                System.out.println("HIDERS WON");
-                gui.updateStatus("HIDERS WON");
+                if (!master.test)
+                    gui.updateStatus("HIDERS WON");
                 addBehaviour(new SendEndGameBehaviour());
                 stop();
             }
@@ -565,8 +565,8 @@ public class GameMasterAgent extends Agent {
             new_world[newPos.y][newPos.x] = agent;
 
             ((GameMasterAgent) myAgent).setWorld(new_world);
-            gui.updatePos(oldPos.x, oldPos.y, newPos.x, newPos.y, orientation, agent);
-            System.out.println("\n");
+            if (!((GameMasterAgent) myAgent).test)
+                gui.updatePos(oldPos.x, oldPos.y, newPos.x, newPos.y, orientation, agent);
 
             if (agent == 'S') {
                 addBehaviour(new FinishedRequestBehaviour(seekerAID));

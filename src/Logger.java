@@ -16,8 +16,13 @@ public class Logger {
     private static Path out_hiders;
     private static Path out_seekers;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd_HH.mm.ss");
+    private static boolean test;
 
-    public static void init() {
+    public static void init(boolean t) {
+        test = t;
+        if (test)
+            return;
+
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         String now = sdf.format(timestamp);
 
@@ -37,6 +42,9 @@ public class Logger {
     }
 
     public static void writeLog(String content, String file) {
+
+        if (test)
+            return;
 
         Path path = null;
 
