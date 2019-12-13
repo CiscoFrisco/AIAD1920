@@ -36,7 +36,7 @@ class TestFilesGenerator {
             String seekers = String.valueOf(world.getSeekers().size());
             String cells = String.valueOf(world.numCells());
             String obstacles = String.valueOf(world.numObstacles());
-            String lyingProbability = String.valueOf(ThreadLocalRandom.current().nextDouble(0, 1));
+            String lyingProbability = String.valueOf(ThreadLocalRandom.current().nextDouble(0, 0.1));
             String maxRounds = String.valueOf(ThreadLocalRandom.current().nextInt(10, 51));
 
             CSVExport.writeLine(new String[] { worlds.get(randomIndex), hiders, seekers, cells, obstacles, lyingProbability, maxRounds });
