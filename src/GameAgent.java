@@ -371,7 +371,7 @@ public class GameAgent extends Agent {
 
             String content = "OPPONENTS;";
 
-            double randomNum = ThreadLocalRandom.current().nextDouble(0, 100 + 1);
+            double randomNum = ThreadLocalRandom.current().nextDouble(0, 1);
             if (randomNum < lyingProbability) {
                 request.addReceiver(((GameAgent) myAgent).getMasterAID());
                 Position max = ((GameAgent) myAgent).getMaxKnownXY();
