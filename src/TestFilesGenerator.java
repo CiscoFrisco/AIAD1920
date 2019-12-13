@@ -26,7 +26,7 @@ class TestFilesGenerator {
         int numTests = Integer.parseInt(args[1]);
         String fileName = args[0];
         CSVExport.init(fileName,
-                new String[] { "FileName", "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability", "Max Rounds" });
+                new String[] { "FileName", "Hiders", "Seekers", "Cells", "Obstacles", "Max Rounds" });
         ArrayList<String> worlds = readWorlds();
 
         for (int i = 0; i < numTests; i++) {
@@ -36,10 +36,9 @@ class TestFilesGenerator {
             String seekers = String.valueOf(world.getSeekers().size());
             String cells = String.valueOf(world.numCells());
             String obstacles = String.valueOf(world.numObstacles());
-            String lyingProbability = String.valueOf(ThreadLocalRandom.current().nextDouble(0, 0.1));
             String maxRounds = String.valueOf(ThreadLocalRandom.current().nextInt(10, 51));
 
-            CSVExport.writeLine(new String[] { worlds.get(randomIndex), hiders, seekers, cells, obstacles, lyingProbability, maxRounds });
+            CSVExport.writeLine(new String[] { worlds.get(randomIndex), hiders, seekers, cells, obstacles, maxRounds });
         }
     }
 }

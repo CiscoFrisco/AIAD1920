@@ -25,8 +25,6 @@ public class GameMasterAgent extends Agent {
     private int numSeekers;
     private int numHiders;
 
-    private double lyingProbability;
-    private boolean lyingAgent;
     private boolean test;
 
     private GUI gui;
@@ -38,9 +36,7 @@ public class GameMasterAgent extends Agent {
         numSeekers = (int) args[1];
         numHiders = (int) args[2];
         rounds = (int) args[3];
-        lyingProbability = (double) args[4];
-        lyingAgent = false;
-        test = (boolean) args[5];
+        test = (boolean) args[4];
 
         if (!test)
             gui = new GUI(this);
@@ -150,9 +146,7 @@ public class GameMasterAgent extends Agent {
                 case "FINISHED":
                     addBehaviour(new CheckFinishedBehaviour(content_splited));
                     break;
-                case "OPPONENTS":
-                    lyingAgent = true;
-                    break;
+
                 case "READY":
                     if (((GameMasterAgent) myAgent).getCounter() > ((GameMasterAgent) myAgent).getWarmup())
                         addBehaviour(new UpdateReadyAgentsBehaviour(false));
@@ -179,8 +173,7 @@ public class GameMasterAgent extends Agent {
 
         public void action() {
             if (finished) {
-                if (!((GameMasterAgent) myAgent).test)
-                {
+                if (!((GameMasterAgent) myAgent).test) {
                     ((GameMasterAgent) myAgent).getWorld().printWorld();
                     gui.updateStatus("SEEKERS WON");
                 }
@@ -234,10 +227,10 @@ public class GameMasterAgent extends Agent {
         String nObstacles = String.valueOf(world.numObstacles());
         String nMaxRounds = String.valueOf(rounds);
         String nCounter = String.valueOf(counter);
-        String lyingProb = String.valueOf(lyingProbability);
-        String lie = String.valueOf(lyingAgent);
+        String gameLength = (counter - warmup) < (rounds - warmup) * 0.33 ? "Short"
+                : (counter - warmup) < (rounds - warmup) * 0.66 ? "Medium" : "Long";
 
-        return new String[] { nHiders, nSeekers, nCells, nObstacles, lyingProb, nMaxRounds, nCounter, lie };
+        return new String[] { nHiders, nSeekers, nCells, nObstacles, nMaxRounds, nCounter, gameLength };
     }
 
     public class UpdateReadyAgentsBehaviour extends OneShotBehaviour {

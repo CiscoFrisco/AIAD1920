@@ -21,14 +21,12 @@ public class GameAgent extends Agent {
     double currOrientation;
     private LinkedHashSet<Position> cellsSeen;
     private ArrayList<Position> moves;
-    private double lyingProbability;
     private ArrayList<Position> knownPositions;
 
     public void setup() {
 
         Object[] args = getArguments();
         pos = (Position) args[0];
-        lyingProbability = (double) args[1];
         isGrabbing = false;
         currOrientation = 0;
         cellsSeen = new LinkedHashSet<Position>();
@@ -65,7 +63,6 @@ public class GameAgent extends Agent {
             this.cellsSeen.add(opponent);
     }
 
-    
     protected void takeDown() {
         try {
             DFService.deregister(this);
@@ -371,20 +368,10 @@ public class GameAgent extends Agent {
 
             String content = "OPPONENTS;";
 
-            double randomNum = ThreadLocalRandom.current().nextDouble(0, 1);
-            if (randomNum < lyingProbability) {
-                request.addReceiver(((GameAgent) myAgent).getMasterAID());
-                Position max = ((GameAgent) myAgent).getMaxKnownXY();
+            LinkedHashSet<Position> hiders_seen = ((GameAgent) myAgent).getCellsSeen();
 
-                int x = ThreadLocalRandom.current().nextInt(0, max.getX() + 1);
-                int y = ThreadLocalRandom.current().nextInt(0, max.getY() + 1);
-                content += x + "," + y + ";";
-            } else {
-                LinkedHashSet<Position> hiders_seen = ((GameAgent) myAgent).getCellsSeen();
-
-                for (Position hider : hiders_seen) {
-                    content += hider.getX() + "," + hider.getY() + ";";
-                }
+            for (Position hider : hiders_seen) {
+                content += hider.getX() + "," + hider.getY() + ";";
             }
 
             request.setContent(content);
