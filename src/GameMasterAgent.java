@@ -324,7 +324,7 @@ public class GameMasterAgent extends Agent {
         private boolean seekersWon;
 
         public PlayBehaviour() {
-            super(null, 500);
+            super(null, 50);
             this.seekersWon = false;
         }
 
