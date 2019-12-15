@@ -37,7 +37,7 @@ public class HideNSeek {
             String[] exec_split = exec.split(",");
             HideNSeekWorld world = new HideNSeekWorld(exec_split[0]);
 
-            CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles", "Lying Probability",
+            CSVExport.init(args[1], new String[] { "Hiders", "Seekers", "Cells", "Obstacles",
                     "Max Rounds", "Rounds Played", "Game Length" });
 
             createGameMaster(world, world.getSeekers().size(), world.getHiders().size(),
