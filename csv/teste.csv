@@ -1,0 +1,21 @@
+FileName,Hiders,Seekers,Cells,Obstacles,Max Rounds
+../res/worlds/world1.txt,1,1,49,0,15
+../res/worlds/world1.txt,1,1,49,0,16
+../res/worlds/world2.txt,1,2,49,9,32
+../res/worlds/world2.txt,1,2,49,9,12
+../res/worlds/world.txt,2,2,49,8,50
+../res/worlds/world2.txt,1,2,49,9,26
+../res/worlds/world.txt,2,2,49,8,25
+../res/worlds/world.txt,2,2,49,8,27
+../res/worlds/large2.txt,6,2,160,66,14
+../res/worlds/world.txt,2,2,49,8,29
+../res/worlds/open.txt,2,2,25,0,29
+../res/worlds/world1.txt,1,1,49,0,46
+../res/worlds/open.txt,2,2,25,0,23
+../res/worlds/open.txt,2,2,25,0,31
+../res/worlds/world1.txt,1,1,49,0,34
+../res/worlds/large.txt,4,2,160,79,18
+../res/worlds/world1.txt,1,1,49,0,40
+../res/worlds/open.txt,2,2,25,0,18
+../res/worlds/large2.txt,6,2,160,66,10
+../res/worlds/open.txt,2,2,25,0,35
